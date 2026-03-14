@@ -32,6 +32,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to milestones.json"
           else
-            git commit -m "Auto-update milestones $(date -u +%Y-%m-%d)"
+         git commit -m "Auto-update milestones $(date -u +%Y-%m-%d)"
+            git pull --rebase
             git push
           fi
