@@ -72,6 +72,14 @@ STREAK_LABELS = {
     "str_tpm":   "consecutive games with a 3-pointer",
 }
 
+# Team milestone thresholds
+TEAM_SCORE_HIGHS = [130, 140, 150, 160]
+TEAM_OPP_LOWS = [90, 85, 80]
+TEAM_TPM_GAME = [20, 25]
+TEAM_MARGIN = [30, 40, 50]
+TEAM_WIN_MARKS = [10, 20, 30, 40, 50, 60, 65, 70, 73]
+TEAM_SEASON_TPM = [500, 750, 1000, 1250, 1500]
+
 
 def safe_int(v):
     try:
@@ -425,8 +433,108 @@ def detect_milestones(state, games_by_date):
             day_milestones.sort(key=lambda m: (m["priority"], -m.get("threshold", 0)))
             all_milestones[iso_date] = day_milestones
 
+    player_ms = sum(len(v) for v in all_milestones.values())
+    print(f"  {player_ms} player milestones across {len(all_milestones)} dates")
+
+    # === TEAM MILESTONES ===
+    print("  Detecting team milestones...")
+    # Aggregate team game totals per date
+    team_games = {}  # (date_str, team) -> {pts, tpm, opp}
+    for date_str in sorted_dates:
+        dt = datetime.strptime(date_str, "%m/%d/%Y")
+        iso_date = dt.strftime("%Y-%m-%d")
+        for g in games_by_date[date_str]:
+            team = g["team"]
+            opp = g.get("opp", "")
+            k = (iso_date, team)
+            if k not in team_games:
+                team_games[k] = {"pts": 0, "tpm": 0, "opp": opp}
+            team_games[k]["pts"] += g["pts"]
+            team_games[k]["tpm"] += g["tpm"]
+
+    # Process team games chronologically
+    team_season_state = {}  # team -> {gp, wins, tpm}
+    team_ms_count = 0
+
+    for k in sorted(team_games.keys()):
+        iso_date, team = k
+        g = team_games[k]
+        opp = g["opp"]
+        opp_k = (iso_date, opp)
+        opp_pts = team_games[opp_k]["pts"] if opp_k in team_games else 0
+
+        if team not in team_season_state:
+            team_season_state[team] = {"gp": 0, "wins": 0, "tpm": 0}
+        ts = team_season_state[team]
+        old_wins, old_tpm_s = ts["wins"], ts["tpm"]
+
+        ts["gp"] += 1
+        ts["tpm"] += g["tpm"]
+        if g["pts"] > opp_pts and g["pts"] > 0:
+            ts["wins"] += 1
+        margin = g["pts"] - opp_pts
+
+        base_t = {
+            "player": team, "team": team, "opp": opp,
+            "pts": g["pts"], "reb": 0, "ast": 0, "stl": 0, "blk": 0, "tpm": g["tpm"],
+            "line": f"{g['pts']} PTS (opp: {opp_pts})"
+        }
+        day_ms = []
+
+        for m in crossed(old_wins, ts["wins"], TEAM_WIN_MARKS):
+            day_ms.append({**base_t, "type": "team", "cat": "season wins",
+                "milestone": f"{team}: {m} wins this season",
+                "value": ts["wins"], "threshold": m,
+                "priority": 1 if m >= 60 else 2})
+
+        for m in crossed(old_tpm_s, ts["tpm"], TEAM_SEASON_TPM):
+            day_ms.append({**base_t, "type": "team", "cat": "season 3-pointers",
+                "milestone": f"{team}: {m:,} team 3-pointers this season",
+                "value": ts["tpm"], "threshold": m, "priority": 2})
+
+        for t in TEAM_SCORE_HIGHS:
+            if g["pts"] >= t:
+                day_ms.append({**base_t, "type": "team", "cat": "team scoring",
+                    "milestone": f"{team} scored {g['pts']} points",
+                    "value": g["pts"], "threshold": t, "priority": 3})
+                break
+
+        if opp_pts > 0:
+            for t in TEAM_OPP_LOWS:
+                if opp_pts <= t:
+                    day_ms.append({**base_t, "type": "team", "cat": "team defense",
+                        "milestone": f"{team} held {opp} to {opp_pts} points",
+                        "value": opp_pts, "threshold": t, "priority": 3})
+                    break
+
+        for t in TEAM_TPM_GAME:
+            if g["tpm"] >= t:
+                day_ms.append({**base_t, "type": "team", "cat": "team 3-pointers",
+                    "milestone": f"{team} made {g['tpm']} 3-pointers in one game",
+                    "value": g["tpm"], "threshold": t, "priority": 3})
+                break
+
+        if margin > 0:
+            for t in TEAM_MARGIN:
+                if margin >= t:
+                    day_ms.append({**base_t, "type": "team", "cat": "blowout win",
+                        "milestone": f"{team} won by {margin} points ({g['pts']}-{opp_pts})",
+                        "value": margin, "threshold": t, "priority": 3})
+                    break
+
+        if day_ms:
+            if iso_date not in all_milestones:
+                all_milestones[iso_date] = []
+            all_milestones[iso_date].extend(day_ms)
+            team_ms_count += len(day_ms)
+
+    # Sort milestones within each date
+    for iso_date in all_milestones:
+        all_milestones[iso_date].sort(key=lambda m: (m["priority"], -m.get("threshold", 0)))
+
     total_ms = sum(len(v) for v in all_milestones.values())
-    print(f"  {total_ms} milestones across {len(all_milestones)} dates")
+    print(f"  {team_ms_count} team milestones")
+    print(f"  {total_ms} total milestones across {len(all_milestones)} dates")
     return all_milestones
 
 
@@ -444,7 +552,7 @@ def save_output(milestones):
         ms = milestones[d]
         print(f"\n  {d} ({len(ms)} milestones):")
         for m in ms[:8]:
-            emoji = {"cumulative": "🎯", "streak": "🔥", "quirky": "🤪", "single_game": "⭐", "season": "📈"}.get(m["type"], "•")
+            emoji = {"cumulative": "🎯", "streak": "🔥", "quirky": "🤪", "single_game": "⭐", "season": "📈", "team": "🏀"}.get(m["type"], "•")
             print(f"    {emoji} {m['player']} ({m['team']} vs {m['opp']}): {m['milestone']} [{m['line']}]")
         if len(ms) > 8:
             print(f"    ... +{len(ms) - 8} more")

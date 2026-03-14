@@ -53,6 +53,7 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .ms-card.type-quirky{border-left:4px solid #059669}
 .ms-card.type-single_game{border-left:4px solid #d4930d}
 .ms-card.type-season{border-left:4px solid #2563eb}
+.ms-card.type-team{border-left:4px solid #0891b2}
 
 .ms-emoji{font-size:24px;flex-shrink:0;margin-top:2px}
 .ms-body{flex:1;min-width:0}
@@ -68,6 +69,7 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .ms-tag.tag-quirky{background:#ecfdf5;color:#059669}
 .ms-tag.tag-single_game{background:#fef9eb;color:#d4930d}
 .ms-tag.tag-season{background:#eff6ff;color:#2563eb}
+.ms-tag.tag-team{background:#ecfeff;color:#0891b2}
 
 /* EMPTY */
 .empty-state{text-align:center;padding:80px 20px;color:#ccc;font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:2px}
@@ -86,6 +88,7 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .dr-badge.b-str{background:#7c3aed}
 .dr-badge.b-qrk{background:#059669}
 .dr-badge.b-sg{background:#d4930d}
+.dr-badge.b-tm{background:#0891b2}
 
 @media(max-width:600px){
   .logo-main{font-size:28px;letter-spacing:3px}
@@ -105,7 +108,7 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
     <div class="logo-sm">MILESTONE TRACKER</div>
     <div class="db-info" id="dbInfo"></div>
   </div>
-  <div class="date-area">
+  <div class="date-area" id="dateArea">
     <input type="date" class="date-input" id="dateInput">
     <div class="date-nav">
       <button class="date-nav-btn" onclick="shiftDate(-1)">← Day Before</button>
@@ -113,6 +116,16 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
       <button class="date-nav-btn" onclick="setToday()">Today</button>
       <button class="date-nav-btn" onclick="shiftDate(1)">Day After →</button>
       <button class="date-nav-btn" onclick="showAllDates()">📋 All Dates</button>
+      <button class="date-nav-btn" style="border-color:#e04400;color:#e04400" onclick="showSearch()">🔍 Search</button>
+    </div>
+  </div>
+  <!-- SEARCH AREA (hidden by default) -->
+  <div id="searchArea" style="display:none;margin-bottom:24px">
+    <div style="max-width:500px;margin:0 auto;position:relative">
+      <input class="date-input" id="searchInput" type="text" placeholder="Search player or milestone..." autocomplete="off" style="width:100%;font-size:14px">
+    </div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <button class="date-nav-btn" onclick="hideSearch()">📅 Back to Dates</button>
     </div>
   </div>
   <div class="filter-row" id="filters">
@@ -122,6 +135,7 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
     <button class="filter-btn" data-type="quirky" onclick="setFilter('quirky',this)">🤪 Quirky</button>
     <button class="filter-btn" data-type="single_game" onclick="setFilter('single_game',this)">⭐ Single Game</button>
     <button class="filter-btn" data-type="season" onclick="setFilter('season',this)">📈 Season</button>
+    <button class="filter-btn" data-type="team" onclick="setFilter('team',this)">🏀 Team</button>
   </div>
   <div id="content"></div>
 </div>
@@ -131,8 +145,8 @@ let allDates=[];
 let currentFilter="all";
 let currentView="day"; // "day" or "all"
 
-const EMOJIS={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season:"📈"};
-const TYPE_LABELS={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season"};
+const EMOJIS={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season:"📈",team:"🏀"};
+const TYPE_LABELS={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season",team:"Team"};
 
 (async function(){
   const text=document.getElementById("progressText");
@@ -157,6 +171,7 @@ const TYPE_LABELS={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",singl
     // Merge
     DATA={...histData,...curData};
     allDates=Object.keys(DATA).sort().reverse();
+    buildFlatIndex();
     text.textContent="Done!";
     setTimeout(()=>{
       document.getElementById("loadScreen").style.display="none";
@@ -177,23 +192,22 @@ function setToday(){setDateValue(new Date().toISOString().slice(0,10));currentVi
 function setYesterday(){const d=new Date();d.setDate(d.getDate()-1);setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay()}
 function shiftDate(delta){
   if(!dateInput.value)return;
-  // Find next/prev date that has milestones
   const cur=dateInput.value;
   const idx=allDates.indexOf(cur);
-  if(delta<0){
-    // Go to next newer date with milestones
-    const newer=idx>0?allDates[idx-1]:null;
+  if(delta>0){
+    // Day After = newer date = lower index in reversed array
+    const newer=idx>0?allDates[idx-1]:(idx<0?allDates.find(d=>d>cur):null);
     if(newer){setDateValue(newer);currentView="day";renderDay()}
     else{
-      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()+delta);
+      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()+1);
       setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay();
     }
   }else{
-    // Go to next older date with milestones
+    // Day Before = older date = higher index in reversed array
     const older=idx>=0&&idx<allDates.length-1?allDates[idx+1]:(idx<0?allDates.find(d=>d<cur):null);
     if(older){setDateValue(older);currentView="day";renderDay()}
     else{
-      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()+delta);
+      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()-1);
       setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay();
     }
   }
@@ -204,7 +218,95 @@ function setFilter(type,btn){
   document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   if(currentView==="day")renderDay();
-  else renderAllDates();
+  else if(currentView==="all")renderAllDates();
+  else if(currentView==="search")renderSearch();
+}
+
+// === SEARCH ===
+let flatIndex=[]; // built once on load
+function buildFlatIndex(){
+  flatIndex=[];
+  for(const date in DATA){
+    for(const m of DATA[date]){
+      flatIndex.push({...m, date});
+    }
+  }
+}
+
+function showSearch(){
+  currentView="search";
+  document.getElementById("dateArea").style.display="none";
+  document.getElementById("searchArea").style.display="block";
+  document.getElementById("searchInput").focus();
+  renderSearch();
+}
+function hideSearch(){
+  currentView="day";
+  document.getElementById("dateArea").style.display="block";
+  document.getElementById("searchArea").style.display="none";
+  renderDay();
+}
+
+const searchInputEl=document.getElementById("searchInput");
+let searchTimer=null;
+searchInputEl.addEventListener("input",function(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(renderSearch,200);
+});
+
+function renderSearch(){
+  const q=searchInputEl.value.toLowerCase().trim();
+  const container=document.getElementById("content");
+  document.getElementById("filters").style.display="flex";
+
+  if(!q){
+    container.innerHTML='<div class="empty-state"><div class="icon">🔍</div>Type a player name, team, or milestone keyword<div style="font-size:10px;color:#aaa;margin-top:8px">e.g. "LeBron", "10,000 career", "triple-double", "Lakers"</div></div>';
+    return;
+  }
+
+  let results=flatIndex.filter(m=>{
+    if(currentFilter!=="all"&&m.type!==currentFilter)return false;
+    const searchStr=(m.player+" "+m.milestone+" "+m.team+" "+m.opp+" "+(m.cat||"")).toLowerCase();
+    return searchStr.includes(q);
+  });
+
+  // Sort: newest first
+  results.sort((a,b)=>b.date.localeCompare(a.date));
+
+  const total=results.length;
+  const PAGE=50;
+  const shown=results.slice(0,PAGE);
+
+  let html='<div class="day-banner"><div class="day-date">SEARCH: "'+q.toUpperCase()+'"</div><div class="day-count">'
+    +total.toLocaleString()+' result'+(total!==1?'s':'')
+    +(total>PAGE?' · showing first '+PAGE:'')+'</div></div>';
+
+  if(!shown.length){
+    html+='<div class="empty-state"><div class="icon">🔍</div>No milestones found for "'+q+'"</div>';
+    container.innerHTML=html;return;
+  }
+
+  html+='<div class="ms-list">';
+  shown.forEach(m=>{
+    const emoji=EMOJIS[m.type]||"•";
+    const typeLabel=TYPE_LABELS[m.type]||m.type;
+    const fmtDate=new Date(m.date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    html+='<div class="ms-card type-'+m.type+'" style="cursor:pointer" onclick="setDateValue(\''+m.date+'\');hideSearch()">'
+      +'<div class="ms-emoji">'+emoji+'</div>'
+      +'<div class="ms-body">'
+      +'<div class="ms-headline">'+m.milestone+'</div>'
+      +'<div class="ms-detail">'
+      +'<span class="ms-player">'+m.player+'</span> '
+      +'<span class="ms-matchup">('+m.team+' vs '+m.opp+')</span> — '
+      +'<span class="ms-line">'+m.line+'</span>'
+      +' · <span style="color:#e04400;font-weight:600">'+fmtDate+'</span>'
+      +'</div>'
+      +'<span class="ms-tag tag-'+m.type+'">'+typeLabel+'</span>'
+      +'</div></div>';
+  });
+  html+='</div>';
+  if(total>PAGE)html+='<div style="text-align:center;padding:16px;color:#999;font-size:11px">Showing '+PAGE+' of '+total.toLocaleString()+' results. Refine your search for more specific results.</div>';
+  container.innerHTML=html;
 }
 
 function showAllDates(){window._selYear=window._selYear||allDates[0]?.slice(0,4);currentView="all";renderAllDates()}
@@ -295,6 +397,7 @@ function renderAllDates(){
     if(types.has("streak"))badges+='<div class="dr-badge b-str"></div>';
     if(types.has("quirky"))badges+='<div class="dr-badge b-qrk"></div>';
     if(types.has("single_game"))badges+='<div class="dr-badge b-sg"></div>';
+    if(types.has("team"))badges+='<div class="dr-badge b-tm"></div>';
     const topMs=filtered[0];
     const preview=topMs?topMs.player+": "+topMs.milestone:"";
     html+='<div class="date-row" onclick="setDateValue(\''+d+'\');currentView=\'day\';renderDay()">'
