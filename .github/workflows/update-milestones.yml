@@ -1,0 +1,37 @@
+name: Update Milestones
+
+on:
+  schedule:
+    # 2:15 AM Pacific Time = 10:15 AM UTC (staggered from career highs)
+    - cron: '15 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run milestone detector
+        run: python update_milestones.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add milestones.json
+          if git diff --cached --quiet; then
+            echo "No changes to milestones.json"
+          else
+            git commit -m "Auto-update milestones $(date -u +%Y-%m-%d)"
+            git push
+          fi
