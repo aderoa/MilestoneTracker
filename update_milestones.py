@@ -568,7 +568,187 @@ def main():
     games_by_date = fetch_2526_games()
     milestones = detect_milestones(state, games_by_date)
     save_output(milestones)
+    rebuild_query_data(games_by_date)
     print("\nDone! ✓")
+
+
+QUERY_BASELINE_FILE = "query_baseline.bin"
+QUERY_OUTPUT_FILE = "query_data.bin"
+
+PTS_THRESH = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+REB_THRESH = [3, 5, 8, 10, 12, 15, 20]
+AST_THRESH = [3, 5, 8, 10, 12, 15, 20]
+STL_THRESH = [1, 2, 3, 4, 5]
+BLK_THRESH = [1, 2, 3, 4, 5]
+TPM_THRESH = [1, 2, 3, 4, 5, 6]
+
+
+def rebuild_query_data(games_by_date):
+    """Rebuild query_data.bin from query_baseline + 2025-26 games."""
+    qb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), QUERY_BASELINE_FILE)
+    if not os.path.exists(qb_path):
+        print(f"  {QUERY_BASELINE_FILE} not found, skipping query data rebuild")
+        return
+
+    print(f"\nRebuilding query data...")
+    with gzip.open(qb_path, "rb") as f:
+        qb = json.loads(f.read())
+
+    career = qb["career"]
+    sc = qb["streak_cur"]
+    sb = qb["streak_best"]
+    gh = qb["game_high"]
+    tp = {tuple(k.split("|||")): v for k, v in qb["tp"].items()}
+    ts_hist = {tuple(k.split("|||")): v for k, v in qb["ts"].items()}
+    bio = qb["bio"]
+    countries = qb["countries"]
+    colleges = qb["colleges"]
+    country_idx = {c: i for i, c in enumerate(countries)}
+    college_idx = {c: i for i, c in enumerate(colleges)}
+
+    # Team season for 2025-26
+    ts_2526 = {}
+
+    # Sort dates and process
+    sorted_dates = sorted(games_by_date.keys(),
+                          key=lambda d: datetime.strptime(d, "%m/%d/%Y"))
+
+    for date_str in sorted_dates:
+        dt = datetime.strptime(date_str, "%m/%d/%Y")
+        iso = dt.strftime("%Y-%m-%d")
+
+        for g in games_by_date[date_str]:
+            name = g["player"]
+            pts, reb, ast = g["pts"], g["reb"], g["ast"]
+            stl, blk, tpm = g["stl"], g["blk"], g["tpm"]
+            fgm, fga = g["fgm"], g["fga"]
+            ftm, fta = g.get("ftm", 0), g.get("fta", 0)
+            team = g["team"]
+
+            # Career
+            if name not in career:
+                career[name] = {"gp": 0, "pts": 0, "reb": 0, "ast": 0, "stl": 0, "blk": 0,
+                                "tpm": 0, "fgm": 0, "fga": 0, "ftm": 0, "fta": 0, "tov": 0, "pf": 0, "fy": 2026, "ly": 2026}
+            c = career[name]
+            tov = g.get("tov", 0); pf = g.get("pf", 0)
+            c["gp"] += 1; c["pts"] += pts; c["reb"] += reb; c["ast"] += ast
+            c["stl"] += stl; c["blk"] += blk; c["tpm"] += tpm
+            c["fgm"] += fgm; c["fga"] += fga; c["ftm"] += ftm; c["fta"] += fta
+            c["tov"] = c.get("tov", 0) + tov; c["pf"] = c.get("pf", 0) + pf
+            c["ly"] = 2026
+
+            # Game highs
+            if name not in gh:
+                gh[name] = {"pts": 0, "reb": 0, "ast": 0, "stl": 0, "blk": 0, "tpm": 0}
+            g_h = gh[name]
+            if pts > g_h["pts"]: g_h["pts"] = pts
+            if reb > g_h["reb"]: g_h["reb"] = reb
+            if ast > g_h["ast"]: g_h["ast"] = ast
+            if stl > g_h["stl"]: g_h["stl"] = stl
+            if blk > g_h["blk"]: g_h["blk"] = blk
+            if tpm > g_h["tpm"]: g_h["tpm"] = tpm
+
+            # Team-player
+            k = (name, team)
+            if k not in tp:
+                tp[k] = {"gp": 0, "pts": 0, "reb": 0, "ast": 0, "tpm": 0}
+            tp[k]["gp"] += 1; tp[k]["pts"] += pts; tp[k]["reb"] += reb
+            tp[k]["ast"] += ast; tp[k]["tpm"] += tpm
+
+            # Streaks
+            if name not in sc:
+                sc[name] = {}; sb[name] = {}
+            s_c = sc[name]; s_b = sb[name]
+            dd = sum(1 for v in [pts, reb, ast, stl, blk] if v >= 10)
+            for t in PTS_THRESH:
+                k2 = f"p{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if pts >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            for t in REB_THRESH:
+                k2 = f"r{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if reb >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            for t in AST_THRESH:
+                k2 = f"a{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if ast >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            for t in STL_THRESH:
+                k2 = f"s{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if stl >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            for t in BLK_THRESH:
+                k2 = f"b{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if blk >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            for t in TPM_THRESH:
+                k2 = f"t{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if tpm >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
+            s_c["dd"] = s_c.get("dd", 0) + 1 if dd >= 2 else 0; s_b["dd"] = max(s_b.get("dd", 0), s_c["dd"])
+            s_c["td"] = s_c.get("td", 0) + 1 if dd >= 3 else 0; s_b["td"] = max(s_b.get("td", 0), s_c["td"])
+
+            # Team season 2025-26
+            if team:
+                if team not in ts_2526:
+                    ts_2526[team] = {"gp_set": set(), "pts": 0, "tpm": 0, "reb": 0, "ast": 0}
+                ts_2526[team]["pts"] += pts; ts_2526[team]["tpm"] += tpm
+                ts_2526[team]["reb"] += reb; ts_2526[team]["ast"] += ast
+                ts_2526[team]["gp_set"].add(iso)
+
+    # Build output arrays
+    P_SKEYS = ["p5","p10","p15","p20","p25","p30","p35","p40","p45","p50",
+               "r3","r5","r8","r10","r12","r15","r20",
+               "a3","a5","a8","a10","a12","a15","a20",
+               "s1","s2","s3","s4","s5",
+               "b1","b2","b3","b4","b5",
+               "t1","t2","t3","t4","t5","t6",
+               "dd","td"]
+
+    players_arr = []
+    for name, c in career.items():
+        b = bio.get(name, {})
+        s_b_p = sb.get(name, {})
+        g_h = gh.get(name, {"pts": 0, "reb": 0, "ast": 0, "stl": 0, "blk": 0, "tpm": 0})
+        cid = country_idx.get(b.get("country", ""), -1)
+        colid = college_idx.get(b.get("college", ""), -1)
+        pos = b.get("pos", "")
+        ht = b.get("height", "")
+        draft = 0
+        try: draft = int(b.get("draft", "0"))
+        except: pass
+        pick = 0
+        try: pick = int(b.get("pick", "0"))
+        except: pass
+        row = [name, c["gp"], c["pts"], c["reb"], c["ast"], c["stl"], c["blk"], c["tpm"],
+               c["fgm"], c["fga"], c["ftm"], c["fta"], c.get("tov", 0), c.get("pf", 0), c["fy"], c["ly"],
+               cid, colid, pos, ht, draft, pick]
+        for sk in P_SKEYS:
+            row.append(s_b_p.get(sk, 0))
+        row.extend([g_h["pts"], g_h["reb"], g_h["ast"], g_h["stl"], g_h["blk"], g_h["tpm"]])
+        players_arr.append(row)
+
+    tp_arr = [[k[0], k[1], v["gp"], v["pts"], v["reb"], v["ast"], v["tpm"]] for k, v in tp.items()]
+
+    # Merge historical team seasons + 2025-26
+    ts_arr = []
+    for k, v in ts_hist.items():
+        team, syr_str = k
+        syr = int(syr_str)
+        ts_arr.append([team, syr, v["gp"], v["pts"], v["tpm"], v["reb"], v["ast"]])
+    for team, v in ts_2526.items():
+        gp = len(v["gp_set"])
+        if gp > 0:
+            ts_arr.append([team, 2026, gp, v["pts"], v["tpm"], v["reb"], v["ast"]])
+
+    streak_config = {
+        "pts": {"label": "Points", "thresholds": PTS_THRESH},
+        "reb": {"label": "Rebounds", "thresholds": REB_THRESH},
+        "ast": {"label": "Assists", "thresholds": AST_THRESH},
+        "stl": {"label": "Steals", "thresholds": STL_THRESH},
+        "blk": {"label": "Blocks", "thresholds": BLK_THRESH},
+        "tpm": {"label": "3-Pointers Made", "thresholds": TPM_THRESH},
+        "dd": {"label": "Double-Doubles", "thresholds": [1]},
+        "td": {"label": "Triple-Doubles", "thresholds": [1]},
+    }
+
+    output = {"p": players_arr, "tp": tp_arr, "ts": ts_arr,
+              "countries": countries, "colleges": colleges,
+              "streak_config": streak_config, "streak_keys": P_SKEYS}
+
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), QUERY_OUTPUT_FILE)
+    json_str = json.dumps(output, separators=(",", ":"))
+    with gzip.open(out_path, "wb", compresslevel=9) as f:
+        f.write(json_str.encode("utf-8"))
+    print(f"  Saved {QUERY_OUTPUT_FILE} ({os.path.getsize(out_path)/1024:.0f} KB)")
+    print(f"  {len(players_arr)} players, {len(tp_arr)} team-player, {len(ts_arr)} team-seasons")
 
 
 if __name__ == "__main__":

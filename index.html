@@ -137,10 +137,7 @@ table.lb tbody tr:hover{background:#f0f0ff}
         <span class="ql">Mode</span>
         <select class="qs" id="qM" onchange="qModeChange()"></select>
       </div>
-      <div class="qr" id="qStreakRow" style="display:none">
-        <span class="ql">Threshold ≥</span>
-        <input class="qi" id="qST" type="number" value="30" min="1">
-      </div>
+      <div class="qr" id="qStreakRow" style="display:none"><span class="ql">At least</span><select class="qs" id="qST"></select><span class="ql">per game</span></div>
       <div class="qr" id="qBioRow" style="display:none">
         <span class="ql">Filter by</span>
         <select class="qs" id="qBioType" onchange="qBioTypeChange()">
@@ -168,13 +165,10 @@ const EM={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season
 const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season",team:"Team"};
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
-const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,FY:12,LY:13,
-  CI:14,COI:15,POS:16,HT:17,DY:18,PK:19,
-  SP10:20,SP15:21,SP20:22,SP25:23,SP30:24,SP35:25,SP40:26,
-  SR5:27,SR10:28,SR15:29,SR20:30,
-  SA5:31,SA10:32,SA15:33,SA20:34,
-  SDD:35,STD:36,STPM:37,
-  HP:38,HR:39,HA:40,HS:41,HB:42,HT3:43};
+let SKEYS=[],SCONF={},GH_START=22;
+const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
+  CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,
+};
 
 (async function(){
   const t=document.getElementById("progressText");
@@ -194,6 +188,7 @@ const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,FY:12,L
       while(true){const{done,value}=await rd2.read();if(done)break;c2.push(value);s2+=value.length}
       const cp2=new Uint8Array(s2);let o2=0;for(const c of c2){cp2.set(c,o2);o2+=c.length}
       QD=JSON.parse(pako.inflate(cp2,{to:'string'}))}
+    SKEYS=QD.streak_keys||[];SCONF=QD.streak_config||{};GH_START=22+SKEYS.length;
     buildFlat();t.textContent="Done!";
     setTimeout(()=>{
       document.getElementById("loadScreen").style.display="none";
@@ -264,7 +259,7 @@ function rS(){
 }
 
 // === QUERY BUILDER ===
-const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"gp",l:"Games",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA}];
+const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"gp",l:"Games Played",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA},{id:"tov",l:"Turnovers",i:P.TOV},{id:"pf",l:"Personal Fouls",i:P.PF}];
 const GHSTATS=[{id:"hpts",l:"Career High PTS",i:P.HP},{id:"hreb",l:"Career High REB",i:P.HR},{id:"hast",l:"Career High AST",i:P.HA},{id:"hstl",l:"Career High STL",i:P.HS},{id:"hblk",l:"Career High BLK",i:P.HB},{id:"htpm",l:"Career High 3PM",i:P.HT3}];
 const TPSTATS=[{id:"pts",l:"Points",i:3},{id:"reb",l:"Rebounds",i:4},{id:"ast",l:"Assists",i:5},{id:"tpm",l:"3-Pointers",i:6},{id:"gp",l:"Games",i:2}];
 const TSSTATS=[{id:"pts",l:"Points",i:3},{id:"tpm",l:"3-Pointers",i:4},{id:"reb",l:"Rebounds",i:5},{id:"ast",l:"Assists",i:6},{id:"gp",l:"Games",i:2}];
@@ -291,11 +286,28 @@ function qOpts(){
 }
 function qModeChange(){
   const mode=document.getElementById("qM").value;
-  document.getElementById("qStreakRow").style.display=mode==="streak"?"flex":"none";
+  const sr=document.getElementById("qSR")||document.getElementById("qStreakRow");
+  if(sr)sr.style.display=mode==="streak"?"flex":"none";
+  const s=document.getElementById("qS");
   if(mode==="streak"){
-    document.getElementById("qS").innerHTML='<option value="pts">Points</option><option value="reb">Rebounds</option><option value="ast">Assists</option><option value="dd">Double-Doubles</option><option value="td">Triple-Doubles</option><option value="tpm">Games with 3PM</option>';
-  }else if(document.getElementById("qE").value==="players"){
-    document.getElementById("qS").innerHTML=[...PSTATS,...GHSTATS].map(x=>'<option value="'+x.id+'">'+x.l+'</option>').join("");
+    s.innerHTML=Object.entries(SCONF).map(([k,v])=>'<option value="'+k+'">'+v.label+'</option>').join("");
+    s.onchange=qStreakStatChange;
+    qStreakStatChange();
+  }else{
+    s.onchange=null;
+    if(document.getElementById("qE").value==="players"){
+      const gh=[{id:"hpts",l:"Career High PTS"},{id:"hreb",l:"Career High REB"},{id:"hast",l:"Career High AST"},{id:"hstl",l:"Career High STL"},{id:"hblk",l:"Career High BLK"},{id:"htpm",l:"Career High 3PM"}];
+      s.innerHTML=[...PSTATS,...gh].map(x=>'<option value="'+x.id+'">'+x.l+'</option>').join("");
+    }
+  }
+}
+function qStreakStatChange(){
+  const stat=document.getElementById("qS").value;
+  const stEl=document.getElementById("qST");
+  const conf=SCONF[stat];
+  if(conf&&conf.thresholds){
+    stEl.innerHTML=conf.thresholds.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
+    if(conf.thresholds.length>2)stEl.selectedIndex=Math.floor(conf.thresholds.length/2);
   }
 }
 function qBioTypeChange(){
@@ -315,23 +327,16 @@ function qBioTypeChange(){
 function fmt(n){return typeof n==="number"?(Number.isInteger(n)?n.toLocaleString():n.toFixed(1)):n}
 
 function getStreakIdx(stat,threshold){
-  // Map stat+threshold to the right index in player array
-  if(stat==="pts"){
-    const map={10:P.SP10,15:P.SP15,20:P.SP20,25:P.SP25,30:P.SP30,35:P.SP35,40:P.SP40};
-    return map[threshold]||null;
+  let key;
+  if(stat==="dd")key="dd";
+  else if(stat==="td")key="td";
+  else{
+    const prefix={pts:"p",reb:"r",ast:"a",stl:"s",blk:"b",tpm:"t"}[stat];
+    if(!prefix)return -1;
+    key=prefix+threshold;
   }
-  if(stat==="reb"){
-    const map={5:P.SR5,10:P.SR10,15:P.SR15,20:P.SR20};
-    return map[threshold]||null;
-  }
-  if(stat==="ast"){
-    const map={5:P.SA5,10:P.SA10,15:P.SA15,20:P.SA20};
-    return map[threshold]||null;
-  }
-  if(stat==="dd")return P.SDD;
-  if(stat==="td")return P.STD;
-  if(stat==="tpm")return P.STPM;
-  return null;
+  const idx=SKEYS.indexOf(key);
+  return idx>=0?22+idx:-1;
 }
 
 function bioFilter(p){
