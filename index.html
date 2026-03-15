@@ -216,6 +216,7 @@ const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"S
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=23;
+const APP_VERSION="2026.03.15b";
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
   CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,SI:22,
 };
@@ -244,7 +245,7 @@ const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,
       document.getElementById("loadScreen").style.display="none";
       document.getElementById("app").style.display="block";
       const tm=Object.values(MS).reduce((s,d)=>s+d.length,0);
-      document.getElementById("dbInfo").textContent=allDates.length+" DATES · "+tm.toLocaleString()+" MILESTONES · "+(QD.p||[]).length+" PLAYERS · 1947-2026";
+      document.getElementById("dbInfo").textContent="v"+APP_VERSION+" · "+allDates.length+" DATES · "+tm.toLocaleString()+" MILESTONES · "+(QD.p||[]).length+" PLAYERS · 1947-2026";
       if(allDates.length)document.getElementById("dateInput").value=allDates[0];
       bF("fD");bF("fA");bF("fS");qOpts();rD();
     },200);
