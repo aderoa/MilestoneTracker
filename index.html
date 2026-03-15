@@ -143,6 +143,7 @@ table.lb tbody tr:hover{background:#f0f0ff}
         <select class="qs" id="qBioType" onchange="qBioTypeChange()">
           <option value="">No filter</option>
           <option value="country">Country</option>
+          <option value="state">State (US-born)</option>
           <option value="college">College</option>
           <option value="pos">Position</option>
         </select>
@@ -317,6 +318,8 @@ function qBioTypeChange(){
   bv.style.display="inline-block";
   if(bt==="country"){
     bv.innerHTML='<option value="">All</option>'+(QD.countries||[]).map(c=>'<option value="'+c+'">'+c+'</option>').join("");
+  }else if(bt==="state"){
+    bv.innerHTML='<option value="">All</option>'+(QD.states||[]).map(s=>'<option value="'+s+'">'+s+'</option>').join("");
   }else if(bt==="college"){
     bv.innerHTML='<option value="">All</option>'+(QD.colleges||[]).map(c=>'<option value="'+c+'">'+c+'</option>').join("");
   }else if(bt==="pos"){
@@ -346,6 +349,11 @@ function bioFilter(p){
   if(bt==="country"){
     const ci=p[P.CI];
     return ci>=0&&(QD.countries||[])[ci]===bv;
+  }
+  if(bt==="state"){
+    const ps=QD.player_states||{};
+    const si=ps[p[P.NM]];
+    return si>=0&&(QD.states||[])[si]===bv;
   }
   if(bt==="college"){
     const ci=p[P.COI];
@@ -423,9 +431,13 @@ function getBio(p){
   const country=(QD.countries||[])[p[P.CI]]||"";
   const college=(QD.colleges||[])[p[P.COI]]||"";
   const pos=p[P.POS]||"";
+  const ps=QD.player_states||{};
+  const si=ps[p[P.NM]];
+  const state=si>=0?(QD.states||[])[si]||"":"";
   const parts=[];
   if(pos)parts.push(pos);
   if(country&&country!=="United States")parts.push(country);
+  else if(state)parts.push(state);
   if(college)parts.push(college);
   return parts.join(" · ");
 }

@@ -605,6 +605,9 @@ def rebuild_query_data(games_by_date):
     colleges = qb["colleges"]
     country_idx = {c: i for i, c in enumerate(countries)}
     college_idx = {c: i for i, c in enumerate(colleges)}
+    states = qb.get("states", [])
+    bio_states = qb.get("bio_states", {})
+    state_idx = {s: i for i, s in enumerate(states)}
 
     # Team season for 2025-26
     ts_2526 = {}
@@ -739,8 +742,16 @@ def rebuild_query_data(games_by_date):
         "td": {"label": "Triple-Doubles", "thresholds": [1]},
     }
 
+    # Build player_states lookup
+    player_states = {}
+    for p in players_arr:
+        name = p[0]
+        st = bio_states.get(name, "")
+        player_states[name] = state_idx.get(st, -1)
+
     output = {"p": players_arr, "tp": tp_arr, "ts": ts_arr,
               "countries": countries, "colleges": colleges,
+              "states": states, "player_states": player_states,
               "streak_config": streak_config, "streak_keys": P_SKEYS}
 
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), QUERY_OUTPUT_FILE)
