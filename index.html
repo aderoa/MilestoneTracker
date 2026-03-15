@@ -20,13 +20,23 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .subtitle{font-size:12px;color:#999;letter-spacing:3px;text-transform:uppercase;margin:8px 0 40px;font-family:'Oswald',sans-serif}
 #progressText{font-size:11px;color:#999;margin-top:8px}
 
-#app{display:none;padding:20px 16px;max-width:900px;margin:0 auto}
-.header{text-align:center;margin-bottom:24px}
+#app{display:none;padding:20px 16px;max-width:960px;margin:0 auto}
+.header{text-align:center;margin-bottom:16px}
 .logo-sm{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(90deg,#e04400,#d4930d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .db-info{font-size:10px;color:#999;letter-spacing:2px;margin-top:2px}
 
+/* MAIN TABS */
+.main-tabs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:20px}
+.main-tab{padding:8px 16px;border-radius:6px;border:2px solid #ddd;cursor:pointer;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:all 0.15s;background:transparent;color:#999}
+.main-tab:hover{border-color:#bbb;color:#666}
+.main-tab.active{background:#e04400;border-color:#e04400;color:#fff}
+
+/* SECTION CONTAINERS */
+.section{display:none}
+.section.active{display:block}
+
 /* DATE PICKER */
-.date-area{text-align:center;margin-bottom:28px}
+.date-area{text-align:center;margin-bottom:20px}
 .date-input{padding:10px 16px;border-radius:6px;background:#f5f5f8;color:#222;font-size:15px;font-family:'JetBrains Mono',monospace;outline:none;border:2px solid #ddd;transition:border-color 0.2s;cursor:pointer}
 .date-input:focus{border-color:#e04400}
 .date-nav{display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap}
@@ -34,13 +44,13 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .date-nav-btn:hover{border-color:#e04400;color:#e04400}
 
 /* FILTERS */
-.filter-row{display:flex;justify-content:center;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.filter-btn{padding:5px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;color:#888;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all 0.15s}
+.filter-row{display:flex;justify-content:center;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:5px 10px;border-radius:12px;border:1px solid #ddd;background:#fff;color:#888;font-size:9px;font-weight:600;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all 0.15s}
 .filter-btn:hover{border-color:#7c3aed;color:#7c3aed}
 .filter-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
 
-/* SUMMARY BANNER */
-.day-banner{text-align:center;margin-bottom:24px;padding:16px 20px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d5e 100%);border-radius:8px}
+/* BANNERS */
+.day-banner{text-align:center;margin-bottom:20px;padding:14px 20px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d5e 100%);border-radius:8px}
 .day-banner .day-date{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase}
 .day-banner .day-count{font-size:11px;color:#ccc;margin-top:4px;letter-spacing:1px}
 
@@ -54,11 +64,9 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .ms-card.type-single_game{border-left:4px solid #d4930d}
 .ms-card.type-season{border-left:4px solid #2563eb}
 .ms-card.type-team{border-left:4px solid #0891b2}
-
 .ms-emoji{font-size:24px;flex-shrink:0;margin-top:2px}
 .ms-body{flex:1;min-width:0}
 .ms-headline{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:#222;letter-spacing:0.5px;text-transform:uppercase;line-height:1.3}
-.ms-headline .ms-val{color:#e04400}
 .ms-detail{font-size:11px;color:#888;margin-top:4px;line-height:1.5}
 .ms-detail .ms-player{color:#222;font-weight:600}
 .ms-detail .ms-matchup{color:#666}
@@ -71,344 +79,359 @@ body{background:#fff;color:#333;font-family:'JetBrains Mono',monospace;min-heigh
 .ms-tag.tag-season{background:#eff6ff;color:#2563eb}
 .ms-tag.tag-team{background:#ecfeff;color:#0891b2}
 
-/* EMPTY */
-.empty-state{text-align:center;padding:80px 20px;color:#ccc;font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:2px}
-.empty-state .icon{font-size:48px;margin-bottom:16px;opacity:0.5}
-
-/* ALL DATES VIEW */
-.all-dates{margin-top:20px}
+/* ALL DATES */
+.all-dates{margin-top:12px}
 .date-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f0f0f3;cursor:pointer;transition:background 0.1s}
 .date-row:hover{background:#f5f5ff}
-.date-row .dr-date{font-weight:600;color:#222;font-size:12px}
-.date-row .dr-count{font-size:11px;color:#999}
-.date-row .dr-preview{font-size:10px;color:#888;flex:1;margin:0 16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.date-row .dr-badges{display:flex;gap:4px}
+.date-row .dr-date{font-weight:600;color:#222;font-size:12px;min-width:80px}
+.date-row .dr-count{font-size:11px;color:#999;min-width:20px;text-align:right}
+.date-row .dr-preview{font-size:10px;color:#888;flex:1;margin:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.date-row .dr-badges{display:flex;gap:3px;margin-right:8px}
 .dr-badge{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dr-badge.b-cum{background:#e04400}
-.dr-badge.b-str{background:#7c3aed}
-.dr-badge.b-qrk{background:#059669}
-.dr-badge.b-sg{background:#d4930d}
-.dr-badge.b-tm{background:#0891b2}
+.dr-badge.b-cum{background:#e04400}.dr-badge.b-str{background:#7c3aed}.dr-badge.b-qrk{background:#059669}.dr-badge.b-sg{background:#d4930d}.dr-badge.b-tm{background:#0891b2}
 
-@media(max-width:600px){
-  .logo-main{font-size:28px;letter-spacing:3px}
-  .ms-card{flex-direction:column;gap:8px}
-  .ms-headline{font-size:14px}
-}
+/* SEARCH */
+.search-input{width:100%;padding:12px 16px;border-radius:6px;background:#f5f5f8;color:#222;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;border:2px solid #ddd;transition:border-color 0.2s}
+.search-input:focus{border-color:#e04400}
+
+/* LEADERBOARD TABLE */
+.lb-subtabs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:12px}
+.lb-stab{padding:5px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;color:#888;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all 0.15s}
+.lb-stab:hover{border-color:#e04400;color:#e04400}
+.lb-stab.active{background:#e04400;border-color:#e04400;color:#fff}
+.lb-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#222;text-align:center;margin-bottom:12px}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid #e0e0e6}
+.lb-tbl{width:100%;border-collapse:collapse;font-size:11px;background:#fff}
+.lb-tbl th{padding:10px 12px;text-align:left;color:#888;font-size:9px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;border-bottom:2px solid #e0e0e6;background:#f2f2f5;position:sticky;top:0;z-index:2}
+.lb-tbl th.r{text-align:right}.lb-tbl th.c{text-align:center}
+.lb-tbl td{padding:8px 12px;color:#444;border-bottom:1px solid #f0f0f3}
+.lb-tbl td.r{text-align:right}.lb-tbl td.c{text-align:center}
+.lb-tbl td.rank{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;text-align:center;width:40px}
+.lb-tbl td.rank.top1{color:#d4930d}.lb-tbl td.rank.top3{color:#e04400}
+.lb-tbl td.name{font-weight:600;color:#222;white-space:nowrap}
+.lb-tbl td.val{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:#e04400;text-align:right}
+.lb-tbl td.team-tag{color:#7c3aed;font-weight:600;font-size:10px}
+.lb-tbl td.meta{color:#999;font-size:10px}
+.lb-tbl tr:nth-child(even){background:#f8f8fb}
+.lb-tbl tbody tr:hover{background:#f0f0ff}
+
+/* QUERY */
+.query-area{max-width:600px;margin:0 auto 20px}
+.query-box{display:flex;gap:8px}
+.query-btn{padding:12px 20px;border-radius:6px;border:none;background:#e04400;color:#fff;font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;white-space:nowrap}
+.query-btn:hover{filter:brightness(1.1)}.query-btn:disabled{background:#ccc;cursor:not-allowed}
+.query-hint{font-size:10px;color:#aaa;margin-top:6px;text-align:center}
+.query-result{margin-top:16px;padding:16px;background:#f8f8fb;border-radius:8px;border:1px solid #e8e8ee;font-size:12px;line-height:1.6;white-space:pre-wrap;display:none}
+.query-result.loading{color:#999;font-style:italic}
+.query-result.error{color:#e04400;border-color:#fecaca}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:#ccc;font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:2px}
+.empty-state .icon{font-size:48px;margin-bottom:16px;opacity:0.5}
+
+@media(max-width:600px){.logo-main{font-size:28px}.main-tab{padding:6px 10px;font-size:10px}.ms-card{flex-direction:column;gap:8px}.ms-headline{font-size:14px}.lb-tbl td.val{font-size:13px}}
 </style>
 </head>
 <body>
 <div id="loadScreen">
   <div class="logo-main">MILESTONE<br>TRACKER</div>
-  <div class="subtitle">Daily Milestone Alerts · 1947-Present</div>
+  <div class="subtitle">Records · Milestones · 1947-Present</div>
   <div id="progressText">Loading...</div>
 </div>
 <div id="app">
   <div class="header">
-    <div class="logo-sm">MILESTONE TRACKER</div>
+    <div class="logo-sm">NBA MILESTONE TRACKER</div>
     <div class="db-info" id="dbInfo"></div>
   </div>
-  <div class="date-area" id="dateArea">
-    <input type="date" class="date-input" id="dateInput">
-    <div class="date-nav">
-      <button class="date-nav-btn" onclick="shiftDate(-1)">← Day Before</button>
-      <button class="date-nav-btn" onclick="setYesterday()">Yesterday</button>
-      <button class="date-nav-btn" onclick="setToday()">Today</button>
-      <button class="date-nav-btn" onclick="shiftDate(1)">Day After →</button>
-      <button class="date-nav-btn" onclick="showAllDates()">📋 All Dates</button>
-      <button class="date-nav-btn" style="border-color:#e04400;color:#e04400" onclick="showSearch()">🔍 Search</button>
-    </div>
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="showView('daily')">📅 Daily</button>
+    <button class="main-tab" onclick="showView('alldates')">📋 All Dates</button>
+    <button class="main-tab" onclick="showView('search')">🔍 Search</button>
+    <button class="main-tab" onclick="showView('records')">📊 Records</button>
+    <button class="main-tab" onclick="showView('ask')">🤖 Ask Claude</button>
   </div>
-  <!-- SEARCH AREA (hidden by default) -->
-  <div id="searchArea" style="display:none;margin-bottom:24px">
-    <div style="max-width:500px;margin:0 auto;position:relative">
-      <input class="date-input" id="searchInput" type="text" placeholder="Search player or milestone..." autocomplete="off" style="width:100%;font-size:14px">
-    </div>
-    <div style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap">
-      <button class="date-nav-btn" onclick="hideSearch()">📅 Back to Dates</button>
-    </div>
-  </div>
-  <div class="filter-row" id="filters">
-    <button class="filter-btn active" data-type="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn" data-type="cumulative" onclick="setFilter('cumulative',this)">🎯 Cumulative</button>
-    <button class="filter-btn" data-type="streak" onclick="setFilter('streak',this)">🔥 Streaks</button>
-    <button class="filter-btn" data-type="quirky" onclick="setFilter('quirky',this)">🤪 Quirky</button>
-    <button class="filter-btn" data-type="single_game" onclick="setFilter('single_game',this)">⭐ Single Game</button>
-    <button class="filter-btn" data-type="season" onclick="setFilter('season',this)">📈 Season</button>
-    <button class="filter-btn" data-type="team" onclick="setFilter('team',this)">🏀 Team</button>
-  </div>
-  <div id="content"></div>
-</div>
-<script>
-let DATA={};
-let allDates=[];
-let currentFilter="all";
-let currentView="day"; // "day" or "all"
 
+  <!-- DAILY -->
+  <div class="section active" id="sec-daily">
+    <div class="date-area">
+      <input type="date" class="date-input" id="dateInput">
+      <div class="date-nav">
+        <button class="date-nav-btn" onclick="shiftDate(-1)">← Day Before</button>
+        <button class="date-nav-btn" onclick="setYesterday()">Yesterday</button>
+        <button class="date-nav-btn" onclick="setToday()">Today</button>
+        <button class="date-nav-btn" onclick="shiftDate(1)">Day After →</button>
+      </div>
+    </div>
+    <div class="filter-row" id="filtersDaily"></div>
+    <div id="dailyContent"></div>
+  </div>
+
+  <!-- ALL DATES -->
+  <div class="section" id="sec-alldates">
+    <div class="filter-row" id="filtersAll"></div>
+    <div id="allDatesContent"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="section" id="sec-search">
+    <div style="max-width:500px;margin:0 auto 20px">
+      <input class="search-input" id="msSearchInput" type="text" placeholder="Search player, team, or milestone..." autocomplete="off">
+    </div>
+    <div class="filter-row" id="filtersSearch"></div>
+    <div id="searchContent"></div>
+  </div>
+
+  <!-- RECORDS -->
+  <div class="section" id="sec-records">
+    <div class="main-tabs" id="recCatTabs" style="margin-bottom:12px"></div>
+    <div class="lb-subtabs" id="recSubTabs"></div>
+    <div class="lb-title" id="recTitle"></div>
+    <div class="tbl-wrap"><table class="lb-tbl"><thead id="recHead"></thead><tbody id="recBody"></tbody></table></div>
+  </div>
+
+  <!-- ASK CLAUDE -->
+  <div class="section" id="sec-ask">
+    <div class="query-area">
+      <div class="query-box">
+        <input class="search-input" id="queryInput" type="text" placeholder="Ask anything... e.g. 'most 50-pt games all time'" autocomplete="off" style="font-size:13px">
+        <button class="query-btn" id="queryBtn" onclick="runQuery()">ASK</button>
+      </div>
+      <div class="query-hint">Powered by Claude · Ask about records, streaks, comparisons, quirky stats</div>
+      <div class="query-result" id="queryResult"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let MS={},LB={},allDates=[],flatIndex=[],curFilter="all",curView="daily";
 const EMOJIS={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season:"📈",team:"🏀"};
 const TYPE_LABELS={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season",team:"Team"};
+const FILTER_TYPES=["all","cumulative","streak","team","single_game","season","quirky"];
 
+// === LOAD ===
 (async function(){
-  const text=document.getElementById("progressText");
+  const txt=document.getElementById("progressText");
   try{
-    text.textContent="Loading historical milestones...";
-    // Load gzipped historical milestones
-    const histResp=await fetch("milestones_historical.bin");
-    if(!histResp.ok)throw new Error("Historical: HTTP "+histResp.status);
-    const histReader=histResp.body.getReader();
-    const histChunks=[];let histSize=0;
-    while(true){const{done,value}=await histReader.read();if(done)break;histChunks.push(value);histSize+=value.length}
-    const histCompressed=new Uint8Array(histSize);let hOff=0;
-    for(const c of histChunks){histCompressed.set(c,hOff);hOff+=c.length}
-    const histData=JSON.parse(pako.inflate(histCompressed,{to:'string'}));
+    txt.textContent="Loading historical milestones...";
+    const hR=await fetch("milestones_historical.bin");
+    if(!hR.ok)throw new Error("Historical: HTTP "+hR.status);
+    const hRd=hR.body.getReader();const hC=[];let hS=0;
+    while(true){const{done,value}=await hRd.read();if(done)break;hC.push(value);hS+=value.length}
+    const hComp=new Uint8Array(hS);let hO=0;for(const c of hC){hComp.set(c,hO);hO+=c.length}
+    const histData=JSON.parse(pako.inflate(hComp,{to:'string'}));
 
-    text.textContent="Loading current season...";
-    // Load current season milestones (plain JSON)
-    const curResp=await fetch("milestones.json");
-    let curData={};
-    if(curResp.ok)curData=await curResp.json();
+    txt.textContent="Loading current season...";
+    const cR=await fetch("milestones.json");
+    let curData={};if(cR.ok)curData=await cR.json();
+    MS={...histData,...curData};
+    allDates=Object.keys(MS).sort().reverse();
 
-    // Merge
-    DATA={...histData,...curData};
-    allDates=Object.keys(DATA).sort().reverse();
+    txt.textContent="Loading leaderboards...";
+    const lR=await fetch("leaderboards.json");
+    if(lR.ok)LB=await lR.json();
+
     buildFlatIndex();
-    text.textContent="Done!";
+    txt.textContent="Done!";
     setTimeout(()=>{
       document.getElementById("loadScreen").style.display="none";
       document.getElementById("app").style.display="block";
-      const totalMs=Object.values(DATA).reduce((s,d)=>s+d.length,0);
-      document.getElementById("dbInfo").textContent=allDates.length+" GAME DATES · "+totalMs.toLocaleString()+" MILESTONES · 1947-2026";
-      if(allDates.length)setDateValue(allDates[0]);
-      renderDay();
+      const totalMs=Object.values(MS).reduce((s,d)=>s+d.length,0);
+      document.getElementById("dbInfo").textContent=allDates.length+" DATES · "+totalMs.toLocaleString()+" MILESTONES · 1947-2026";
+      if(allDates.length)document.getElementById("dateInput").value=allDates[0];
+      buildFilterBtns("filtersDaily");buildFilterBtns("filtersAll");buildFilterBtns("filtersSearch");
+      buildRecordsTabs();
+      renderDaily();
     },200);
-  }catch(err){text.textContent="Error: "+err.message;console.error(err)}
+  }catch(err){txt.textContent="Error: "+err.message;console.error(err)}
 })();
 
-const dateInput=document.getElementById("dateInput");
-dateInput.addEventListener("change",()=>{currentView="day";renderDay()});
-
-function setDateValue(iso){dateInput.value=iso}
-function setToday(){setDateValue(new Date().toISOString().slice(0,10));currentView="day";renderDay()}
-function setYesterday(){const d=new Date();d.setDate(d.getDate()-1);setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay()}
-function shiftDate(delta){
-  if(!dateInput.value)return;
-  const cur=dateInput.value;
-  const idx=allDates.indexOf(cur);
-  if(delta>0){
-    // Day After = newer date = lower index in reversed array
-    const newer=idx>0?allDates[idx-1]:(idx<0?allDates.find(d=>d>cur):null);
-    if(newer){setDateValue(newer);currentView="day";renderDay()}
-    else{
-      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()+1);
-      setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay();
-    }
-  }else{
-    // Day Before = older date = higher index in reversed array
-    const older=idx>=0&&idx<allDates.length-1?allDates[idx+1]:(idx<0?allDates.find(d=>d<cur):null);
-    if(older){setDateValue(older);currentView="day";renderDay()}
-    else{
-      const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()-1);
-      setDateValue(d.toISOString().slice(0,10));currentView="day";renderDay();
-    }
-  }
-}
-
-function setFilter(type,btn){
-  currentFilter=type;
-  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  if(currentView==="day")renderDay();
-  else if(currentView==="all")renderAllDates();
-  else if(currentView==="search")renderSearch();
-}
-
-// === SEARCH ===
-let flatIndex=[]; // built once on load
 function buildFlatIndex(){
   flatIndex=[];
-  for(const date in DATA){
-    for(const m of DATA[date]){
-      flatIndex.push({...m, date});
-    }
-  }
+  for(const d in MS)for(const m of MS[d])flatIndex.push({...m,date:d});
 }
 
-function showSearch(){
-  currentView="search";
-  document.getElementById("dateArea").style.display="none";
-  document.getElementById("searchArea").style.display="block";
-  document.getElementById("searchInput").focus();
-  renderSearch();
-}
-function hideSearch(){
-  currentView="day";
-  document.getElementById("dateArea").style.display="block";
-  document.getElementById("searchArea").style.display="none";
-  renderDay();
-}
-
-const searchInputEl=document.getElementById("searchInput");
-let searchTimer=null;
-searchInputEl.addEventListener("input",function(){
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(renderSearch,200);
-});
-
-function renderSearch(){
-  const q=searchInputEl.value.toLowerCase().trim();
-  const container=document.getElementById("content");
-  document.getElementById("filters").style.display="flex";
-
-  if(!q){
-    container.innerHTML='<div class="empty-state"><div class="icon">🔍</div>Type a player name, team, or milestone keyword<div style="font-size:10px;color:#aaa;margin-top:8px">e.g. "LeBron", "10,000 career", "triple-double", "Lakers"</div></div>';
-    return;
-  }
-
-  let results=flatIndex.filter(m=>{
-    if(currentFilter!=="all"&&m.type!==currentFilter)return false;
-    const searchStr=(m.player+" "+m.milestone+" "+m.team+" "+m.opp+" "+(m.cat||"")).toLowerCase();
-    return searchStr.includes(q);
+// === VIEW SWITCHING ===
+function showView(v){
+  curView=v;
+  document.querySelectorAll(".main-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".main-tab").forEach(t=>{
+    const map={daily:"📅",alldates:"📋",search:"🔍",records:"📊",ask:"🤖"};
+    if(t.textContent.includes(map[v]))t.classList.add("active");
   });
-
-  // Sort: newest first
-  results.sort((a,b)=>b.date.localeCompare(a.date));
-
-  const total=results.length;
-  const PAGE=50;
-  const shown=results.slice(0,PAGE);
-
-  let html='<div class="day-banner"><div class="day-date">SEARCH: "'+q.toUpperCase()+'"</div><div class="day-count">'
-    +total.toLocaleString()+' result'+(total!==1?'s':'')
-    +(total>PAGE?' · showing first '+PAGE:'')+'</div></div>';
-
-  if(!shown.length){
-    html+='<div class="empty-state"><div class="icon">🔍</div>No milestones found for "'+q+'"</div>';
-    container.innerHTML=html;return;
-  }
-
-  html+='<div class="ms-list">';
-  shown.forEach(m=>{
-    const emoji=EMOJIS[m.type]||"•";
-    const typeLabel=TYPE_LABELS[m.type]||m.type;
-    const fmtDate=new Date(m.date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-    html+='<div class="ms-card type-'+m.type+'" style="cursor:pointer" onclick="setDateValue(\''+m.date+'\');hideSearch()">'
-      +'<div class="ms-emoji">'+emoji+'</div>'
-      +'<div class="ms-body">'
-      +'<div class="ms-headline">'+m.milestone+'</div>'
-      +'<div class="ms-detail">'
-      +'<span class="ms-player">'+m.player+'</span> '
-      +'<span class="ms-matchup">('+m.team+' vs '+m.opp+')</span> — '
-      +'<span class="ms-line">'+m.line+'</span>'
-      +' · <span style="color:#e04400;font-weight:600">'+fmtDate+'</span>'
-      +'</div>'
-      +'<span class="ms-tag tag-'+m.type+'">'+typeLabel+'</span>'
-      +'</div></div>';
-  });
-  html+='</div>';
-  if(total>PAGE)html+='<div style="text-align:center;padding:16px;color:#999;font-size:11px">Showing '+PAGE+' of '+total.toLocaleString()+' results. Refine your search for more specific results.</div>';
-  container.innerHTML=html;
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("sec-"+v).classList.add("active");
+  if(v==="daily")renderDaily();
+  if(v==="alldates")renderAllDates();
+  if(v==="search"){document.getElementById("msSearchInput").focus();renderSearch()}
+  if(v==="records")renderRecords();
 }
 
-function showAllDates(){window._selYear=window._selYear||allDates[0]?.slice(0,4);currentView="all";renderAllDates()}
+// === FILTERS ===
+function buildFilterBtns(containerId){
+  const el=document.getElementById(containerId);
+  el.innerHTML=FILTER_TYPES.map(t=>{
+    const label=t==="all"?"All":(EMOJIS[t]||"")+" "+(TYPE_LABELS[t]||t);
+    return'<button class="filter-btn'+(t===curFilter?" active":"")+'" onclick="setFilter(\''+t+'\',\''+containerId+'\')">'+ label+'</button>';
+  }).join("");
+}
+function setFilter(type,containerId){
+  curFilter=type;
+  ["filtersDaily","filtersAll","filtersSearch"].forEach(id=>buildFilterBtns(id));
+  if(curView==="daily")renderDaily();
+  else if(curView==="alldates")renderAllDates();
+  else if(curView==="search")renderSearch();
+}
 
-function renderDay(){
-  currentView="day";
-  const val=dateInput.value;
-  const ms=DATA[val]||[];
-  const filtered=currentFilter==="all"?ms:ms.filter(m=>m.type===currentFilter);
-  const container=document.getElementById("content");
-  document.getElementById("filters").style.display="flex";
+// === DATE HELPERS ===
+const dateInput=document.getElementById("dateInput");
+dateInput.addEventListener("change",renderDaily);
+function setToday(){dateInput.value=new Date().toISOString().slice(0,10);renderDaily()}
+function setYesterday(){const d=new Date();d.setDate(d.getDate()-1);dateInput.value=d.toISOString().slice(0,10);renderDaily()}
+function shiftDate(delta){
+  if(!dateInput.value)return;
+  const cur=dateInput.value;const idx=allDates.indexOf(cur);
+  if(delta>0){const n=idx>0?allDates[idx-1]:(idx<0?allDates.find(d=>d>cur):null);if(n)dateInput.value=n;else{const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()+1);dateInput.value=d.toISOString().slice(0,10)}}
+  else{const o=idx>=0&&idx<allDates.length-1?allDates[idx+1]:(idx<0?allDates.find(d=>d<cur):null);if(o)dateInput.value=o;else{const d=new Date(cur+"T12:00:00");d.setDate(d.getDate()-1);dateInput.value=d.toISOString().slice(0,10)}}
+  renderDaily();
+}
 
-  if(!val){container.innerHTML='<div class="empty-state"><div class="icon">📅</div>Pick a date</div>';return}
+// === RENDER MILESTONE CARD ===
+function cardHTML(m,extraDate){
+  const emoji=EMOJIS[m.type]||"•";const typeLabel=TYPE_LABELS[m.type]||m.type;
+  let dateTag=extraDate?' · <span style="color:#e04400;font-weight:600">'+new Date(extraDate+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</span>':"";
+  return'<div class="ms-card type-'+m.type+'"'+(extraDate?' style="cursor:pointer" onclick="dateInput.value=\''+extraDate+'\';showView(\'daily\')"':'')+'>'
+    +'<div class="ms-emoji">'+emoji+'</div><div class="ms-body">'
+    +'<div class="ms-headline">'+m.milestone+'</div>'
+    +'<div class="ms-detail"><span class="ms-player">'+m.player+'</span> '
+    +'<span class="ms-matchup">('+m.team+' vs '+m.opp+')</span> — '
+    +'<span class="ms-line">'+m.line+'</span>'+dateTag+'</div>'
+    +'<span class="ms-tag tag-'+m.type+'">'+typeLabel+'</span></div></div>';
+}
 
+// === DAILY VIEW ===
+function renderDaily(){
+  const val=dateInput.value;const ms=MS[val]||[];
+  const filtered=curFilter==="all"?ms:ms.filter(m=>m.type===curFilter);
+  const el=document.getElementById("dailyContent");
+  if(!val){el.innerHTML='<div class="empty-state"><div class="icon">📅</div>Pick a date</div>';return}
   const fmtDate=new Date(val+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-
   if(!filtered.length){
-    const hasAny=ms.length>0;
-    container.innerHTML='<div class="day-banner"><div class="day-date">'+fmtDate+'</div><div class="day-count">'
-      +(hasAny?ms.length+' milestones (none matching filter)':'No milestones on this date')+'</div></div>'
-      +'<div class="empty-state"><div class="icon">'+(hasAny?'🔍':'📅')+'</div>'
-      +(hasAny?'No milestones match the current filter':'No milestones were detected on this date')+'</div>';
-    return;
+    el.innerHTML='<div class="day-banner"><div class="day-date">'+fmtDate+'</div><div class="day-count">'+(ms.length?ms.length+' milestones (none matching filter)':'No milestones on this date')+'</div></div>';return;
   }
-
-  let html='<div class="day-banner"><div class="day-date">'+fmtDate+'</div><div class="day-count">'
-    +filtered.length+(filtered.length!==ms.length?' of '+ms.length:'')+' milestone'+(filtered.length!==1?'s':'')+'</div></div>';
-
-  html+='<div class="ms-list">';
-  filtered.forEach(m=>{
-    const emoji=EMOJIS[m.type]||"•";
-    const typeLabel=TYPE_LABELS[m.type]||m.type;
-    html+='<div class="ms-card type-'+m.type+'">'
-      +'<div class="ms-emoji">'+emoji+'</div>'
-      +'<div class="ms-body">'
-      +'<div class="ms-headline">'+m.milestone+'</div>'
-      +'<div class="ms-detail">'
-      +'<span class="ms-player">'+m.player+'</span> '
-      +'<span class="ms-matchup">('+m.team+' vs '+m.opp+')</span> — '
-      +'<span class="ms-line">'+m.line+'</span>'
-      +'</div>'
-      +'<span class="ms-tag tag-'+m.type+'">'+typeLabel+'</span>'
-      +'</div></div>';
-  });
-  html+='</div>';
-  container.innerHTML=html;
+  let html='<div class="day-banner"><div class="day-date">'+fmtDate+'</div><div class="day-count">'+filtered.length+(filtered.length!==ms.length?' of '+ms.length:'')+' milestone'+(filtered.length!==1?'s':'')+'</div></div><div class="ms-list">';
+  filtered.forEach(m=>{html+=cardHTML(m)});
+  el.innerHTML=html+'</div>';
 }
 
+// === ALL DATES VIEW ===
 function renderAllDates(){
-  currentView="all";
-  document.getElementById("filters").style.display="flex";
-  const container=document.getElementById("content");
-
-  // Get available years
+  const el=document.getElementById("allDatesContent");
   const years=[...new Set(allDates.map(d=>d.slice(0,4)))].sort().reverse();
-  const selYear=window._selYear||years[0];
-  window._selYear=selYear;
-
-  // Filter dates by selected year and type
+  const selYear=window._selYear||years[0];window._selYear=selYear;
   const yearDates=allDates.filter(d=>d.startsWith(selYear));
-  let filteredDates=yearDates;
-  if(currentFilter!=="all"){
-    filteredDates=yearDates.filter(d=>DATA[d].some(m=>m.type===currentFilter));
-  }
+  const filteredDates=curFilter==="all"?yearDates:yearDates.filter(d=>MS[d].some(m=>m.type===curFilter));
 
-  let html='<div class="day-banner"><div class="day-date">ALL GAME DATES</div><div class="day-count">'
-    +allDates.length+' dates with milestones · '+Object.values(DATA).reduce((s,d)=>s+d.length,0).toLocaleString()+' total</div></div>';
-
-  // Year pills
-  html+='<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:16px">';
+  let html='<div class="day-banner"><div class="day-date">ALL GAME DATES</div><div class="day-count">'+allDates.length+' dates · '+Object.values(MS).reduce((s,d)=>s+d.length,0).toLocaleString()+' milestones</div></div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:12px">';
   years.forEach(y=>{
-    const active=y===selYear?"background:#e04400;color:#fff;border-color:#e04400":"";
-    html+='<button onclick="window._selYear=\''+y+'\';renderAllDates()" style="padding:4px 10px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#888;font-size:10px;font-weight:600;font-family:JetBrains Mono,monospace;cursor:pointer;'+active+'">'+y+'</button>';
+    const a=y===selYear?"background:#e04400;color:#fff;border-color:#e04400":"";
+    html+='<button onclick="window._selYear=\''+y+'\';renderAllDates()" style="padding:4px 8px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#888;font-size:9px;font-weight:600;font-family:JetBrains Mono,monospace;cursor:pointer;'+a+'">'+y+'</button>';
   });
-  html+='</div>';
-
-  html+='<div style="font-size:10px;color:#999;text-align:center;margin-bottom:12px">'+filteredDates.length+' dates in '+selYear+'</div>';
-
-  html+='<div class="all-dates">';
+  html+='</div><div style="font-size:10px;color:#999;text-align:center;margin-bottom:8px">'+filteredDates.length+' dates in '+selYear+'</div><div class="all-dates">';
   filteredDates.forEach(d=>{
-    const ms=DATA[d];
-    const filtered=currentFilter==="all"?ms:ms.filter(m=>m.type===currentFilter);
-    if(!filtered.length)return;
-    const fmtDate=new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
-    const types=new Set(filtered.map(m=>m.type));
-    let badges="";
+    const ms=MS[d];const f=curFilter==="all"?ms:ms.filter(m=>m.type===curFilter);if(!f.length)return;
+    const fd=new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+    const types=new Set(f.map(m=>m.type));let badges="";
     if(types.has("cumulative"))badges+='<div class="dr-badge b-cum"></div>';
     if(types.has("streak"))badges+='<div class="dr-badge b-str"></div>';
-    if(types.has("quirky"))badges+='<div class="dr-badge b-qrk"></div>';
-    if(types.has("single_game"))badges+='<div class="dr-badge b-sg"></div>';
     if(types.has("team"))badges+='<div class="dr-badge b-tm"></div>';
-    const topMs=filtered[0];
-    const preview=topMs?topMs.player+": "+topMs.milestone:"";
-    html+='<div class="date-row" onclick="setDateValue(\''+d+'\');currentView=\'day\';renderDay()">'
-      +'<div class="dr-date">'+fmtDate+'</div>'
-      +'<div class="dr-preview">'+preview+'</div>'
-      +'<div class="dr-badges">'+badges+'</div>'
-      +'<div class="dr-count">'+filtered.length+'</div>'
-      +'</div>';
+    if(types.has("single_game"))badges+='<div class="dr-badge b-sg"></div>';
+    html+='<div class="date-row" onclick="dateInput.value=\''+d+'\';showView(\'daily\')"><div class="dr-date">'+fd+'</div><div class="dr-preview">'+(f[0]?f[0].player+": "+f[0].milestone:"")+'</div><div class="dr-badges">'+badges+'</div><div class="dr-count">'+f.length+'</div></div>';
   });
-  html+='</div>';
-  container.innerHTML=html;
+  el.innerHTML=html+'</div>';
+}
+
+// === SEARCH VIEW ===
+const msSearchInput=document.getElementById("msSearchInput");
+let searchTimer;
+msSearchInput.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(renderSearch,200)});
+
+function renderSearch(){
+  const q=msSearchInput.value.toLowerCase().trim();
+  const el=document.getElementById("searchContent");
+  if(!q){el.innerHTML='<div class="empty-state"><div class="icon">🔍</div>Type a player, team, or milestone keyword</div>';return}
+  let results=flatIndex.filter(m=>{
+    if(curFilter!=="all"&&m.type!==curFilter)return false;
+    return(m.player+" "+m.milestone+" "+m.team+" "+m.opp+" "+(m.cat||"")).toLowerCase().includes(q);
+  });
+  results.sort((a,b)=>b.date.localeCompare(a.date));
+  const total=results.length;const shown=results.slice(0,50);
+  let html='<div class="day-banner"><div class="day-date">SEARCH: "'+q.toUpperCase()+'"</div><div class="day-count">'+total.toLocaleString()+' result'+(total!==1?'s':'')+(total>50?' · showing 50':'')+'</div></div>';
+  if(!shown.length){el.innerHTML=html+'<div class="empty-state"><div class="icon">🔍</div>No results</div>';return}
+  html+='<div class="ms-list">';shown.forEach(m=>{html+=cardHTML(m,m.date)});
+  el.innerHTML=html+'</div>'+(total>50?'<div style="text-align:center;padding:16px;color:#999;font-size:10px">Showing 50 of '+total.toLocaleString()+'. Refine your search.</div>':'');
+}
+
+// === RECORDS VIEW ===
+const REC_CATS=[
+  {id:"career",label:"Career Totals",subs:[{id:"pts",l:"Points"},{id:"reb",l:"Rebounds"},{id:"ast",l:"Assists"},{id:"stl",l:"Steals"},{id:"blk",l:"Blocks"},{id:"tpm",l:"3-Pointers"},{id:"gp",l:"Games"}]},
+  {id:"streaks",label:"Longest Streaks",subs:[{id:"pts30",l:"30+ PTS"},{id:"pts25",l:"25+ PTS"},{id:"pts20",l:"20+ PTS"},{id:"reb10",l:"10+ REB"},{id:"ast10",l:"10+ AST"},{id:"dd",l:"Double-Doubles"},{id:"td",l:"Triple-Doubles"},{id:"tpm1",l:"With a 3PM"}]},
+  {id:"team_player",label:"Single-Team",subs:[{id:"team_pts",l:"Most PTS"},{id:"team_gp",l:"Most Games"}]},
+  {id:"team_season",label:"Team Seasons",subs:[{id:"season_pts",l:"Most PTS"},{id:"season_tpm",l:"Most 3PM"}]}
+];
+let recCat="career",recSub="pts";
+
+function buildRecordsTabs(){
+  document.getElementById("recCatTabs").innerHTML=REC_CATS.map(c=>'<button class="main-tab'+(c.id===recCat?" active":"")+'" style="font-size:10px;padding:6px 12px" onclick="recCat=\''+c.id+'\';recSub=REC_CATS.find(x=>x.id===recCat).subs[0].id;buildRecordsTabs();renderRecords()">'+c.label+'</button>').join("");
+  const cat=REC_CATS.find(c=>c.id===recCat);
+  document.getElementById("recSubTabs").innerHTML=cat.subs.map(s=>'<button class="lb-stab'+(s.id===recSub?" active":"")+'" onclick="recSub=\''+s.id+'\';buildRecordsTabs();renderRecords()">'+s.l+'</button>').join("");
+}
+
+function fmt(n){return typeof n==="number"?n.toLocaleString():n}
+function renderRecords(){
+  const h=document.getElementById("recHead"),b=document.getElementById("recBody"),t=document.getElementById("recTitle");
+  if(recCat==="career"){
+    const d=LB.career?.[recSub]||[];
+    t.textContent="ALL-TIME "+REC_CATS[0].subs.find(s=>s.id===recSub)?.l.toUpperCase()+" LEADERS";
+    h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">Value</th><th class="r">Games</th><th>Years</th></tr>';
+    b.innerHTML=d.map((e,i)=>'<tr><td class="rank'+(i===0?" top1":i<3?" top3":"")+'">'+(i+1)+'</td><td class="name">'+e.name+'</td><td class="val">'+fmt(e.value)+'</td><td class="r meta">'+fmt(e.gp)+'</td><td class="meta">'+e.years+'</td></tr>').join("");
+  }else if(recCat==="streaks"){
+    const d=LB.streaks?.[recSub]||[];
+    t.textContent="LONGEST "+(LB.streak_labels?.[recSub]||recSub).toUpperCase();
+    h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">Streak</th><th class="r">Career GP</th></tr>';
+    b.innerHTML=d.map((e,i)=>'<tr><td class="rank'+(i===0?" top1":i<3?" top3":"")+'">'+(i+1)+'</td><td class="name">'+e.name+'</td><td class="val">'+e.value+' gm</td><td class="r meta">'+fmt(e.gp)+'</td></tr>').join("");
+  }else if(recCat==="team_player"){
+    const isPts=recSub==="team_pts";const d=isPts?(LB.team_pts||[]):(LB.team_gp||[]);
+    t.textContent=isPts?"MOST POINTS WITH ONE TEAM":"MOST GAMES WITH ONE TEAM";
+    h.innerHTML='<tr><th class="c">#</th><th>Player</th><th>Team</th><th class="r">'+(isPts?"Points":"Games")+'</th><th class="r">'+(isPts?"Games":"Points")+'</th></tr>';
+    b.innerHTML=d.map((e,i)=>'<tr><td class="rank'+(i===0?" top1":i<3?" top3":"")+'">'+(i+1)+'</td><td class="name">'+e.name+'</td><td class="team-tag">'+e.team+'</td><td class="val">'+fmt(e.value)+'</td><td class="r meta">'+fmt(isPts?e.gp:e.pts)+'</td></tr>').join("");
+  }else if(recCat==="team_season"){
+    const isPts=recSub==="season_pts";const d=isPts?(LB.season_pts||[]):(LB.season_tpm||[]);
+    t.textContent=isPts?"HIGHEST-SCORING TEAM SEASONS":"MOST 3-POINTERS IN A TEAM SEASON";
+    h.innerHTML='<tr><th class="c">#</th><th>Team</th><th>Season</th><th class="r">'+(isPts?"Points":"3PM")+'</th><th class="r">Games</th></tr>';
+    b.innerHTML=d.map((e,i)=>'<tr><td class="rank'+(i===0?" top1":i<3?" top3":"")+'">'+(i+1)+'</td><td class="name">'+e.team+'</td><td class="team-tag">'+e.season+'</td><td class="val">'+fmt(e.value)+'</td><td class="r meta">'+e.gp+'</td></tr>').join("");
+  }
+}
+
+// === ASK CLAUDE ===
+const queryInput=document.getElementById("queryInput");
+const queryBtn=document.getElementById("queryBtn");
+const queryResult=document.getElementById("queryResult");
+queryInput.addEventListener("keydown",e=>{if(e.key==="Enter")runQuery()});
+
+async function runQuery(){
+  const q=queryInput.value.trim();if(!q)return;
+  queryBtn.disabled=true;queryBtn.textContent="THINKING...";
+  queryResult.style.display="block";queryResult.className="query-result loading";
+  queryResult.textContent="Analyzing NBA data...";
+  const sysPrompt=`You are an NBA statistics expert with a comprehensive database of NBA regular season game logs from 1947 to 2026, covering 5,087 players and 1,382,862 games. Here are pre-computed leaderboard summaries:\n${JSON.stringify(LB,null,0).slice(0,8000)}\n\nAnswer the user's question about NBA records, stats, streaks, or comparisons. Be specific with numbers. Format as clean readable text with numbered lists for rankings. Be concise but comprehensive.`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sysPrompt,messages:[{role:"user",content:q}]})});
+    const data=await resp.json();
+    queryResult.className="query-result";queryResult.textContent=data.content?.map(c=>c.text||"").join("\n")||"No response";
+  }catch(err){queryResult.className="query-result error";queryResult.textContent="Error: "+err.message}
+  queryBtn.disabled=false;queryBtn.textContent="ASK";
 }
 </script>
 </body>
