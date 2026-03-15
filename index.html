@@ -6,7 +6,56 @@
 <title>NBA Milestone Tracker</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js">
+// === URL SHARING ===
+function shareQuery(){
+  const params={
+    e:document.getElementById("qE").value,
+    s:document.getElementById("qS").value,
+    m:document.getElementById("qM").value,
+    c:document.getElementById("qC").value,
+    v:document.getElementById("qV").value,
+  };
+  const st=document.getElementById("qST");
+  if(st&&st.offsetParent!==null)params.st=st.value;
+  const bt=document.getElementById("qBioType").value;
+  if(bt){params.bt=bt;params.bv=document.getElementById("qBioVal").value}
+  const hash=Object.entries(params).map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
+  const url=window.location.origin+window.location.pathname+"#q="+hash;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=event.target;btn.textContent="✓ COPIED";
+    setTimeout(()=>{btn.textContent="🔗 SHARE"},1500);
+  }).catch(()=>{prompt("Copy this URL:",url)});
+}
+
+function loadFromURL(){
+  const h=window.location.hash;
+  if(!h||!h.startsWith("#q="))return false;
+  const pairs=h.slice(3).split("&");
+  const p={};pairs.forEach(s=>{const[k,v]=s.split("=");p[k]=decodeURIComponent(v)});
+  // Switch to query view
+  sv("query");
+  // Set entity
+  if(p.e){document.getElementById("qE").value=p.e;qO()}
+  // Wait for options to build, then set values
+  setTimeout(()=>{
+    if(p.m){document.getElementById("qM").value=p.m;qModeChange()}
+    setTimeout(()=>{
+      if(p.s)document.getElementById("qS").value=p.s;
+      if(p.st){const stEl=document.getElementById("qST");if(stEl){qStreakStatChange();stEl.value=p.st}}
+      if(p.bt){
+        document.getElementById("qBioType").value=p.bt;qBioTypeChange();
+        if(p.bv)document.getElementById("qBioVal").value=p.bv;
+      }
+      if(p.c)document.getElementById("qC").value=p.c;
+      if(p.v)document.getElementById("qV").value=p.v;
+      qRun();
+    },100);
+  },100);
+  return true;
+}
+
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{height:6px;width:6px}
@@ -153,7 +202,7 @@ table.lb tbody tr:hover{background:#f0f0ff}
         <span class="ql">Show</span>
         <select class="qs" id="qC"><option value="top">Top</option><option value="min">At Least</option></select>
         <input class="qi" id="qV" type="number" value="50">
-        <button class="qgo" onclick="qRun()">GO</button>
+        <button class="qgo" onclick="qRun()">GO</button> <button class="qgo" style="background:#7c3aed;font-size:11px;padding:8px 14px" onclick="shareQuery()">🔗 SHARE</button>
       </div>
     </div>
     <div class="qcnt" id="qCnt"></div>
@@ -166,30 +215,30 @@ const EM={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season
 const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season",team:"Team"};
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
-let SKEYS=[],SCONF={},GH_START=22;
+let SKEYS=[],SCONF={},GH_START=23;
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
-  CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,
+  CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,SI:22,
 };
 
 (async function(){
   const t=document.getElementById("progressText");
   try{
     t.textContent="Loading milestones...";
-    const h=await fetch("milestones_historical.bin");if(!h.ok)throw new Error("Hist:"+h.status);
+    const h=await fetch("milestones_historical.bin?v="+APP_VERSION);if(!h.ok)throw new Error("Hist:"+h.status);
     const rd=h.body.getReader();const ch=[];let sz=0;
     while(true){const{done,value}=await rd.read();if(done)break;ch.push(value);sz+=value.length}
     const cp=new Uint8Array(sz);let o=0;for(const c of ch){cp.set(c,o);o+=c.length}
     const hist=JSON.parse(pako.inflate(cp,{to:'string'}));
     t.textContent="Loading season...";
-    const cr=await fetch("milestones.json");let cur={};if(cr.ok)cur=await cr.json();
+    const cr=await fetch("milestones.json?v="+APP_VERSION);let cur={};if(cr.ok)cur=await cr.json();
     MS={...hist,...cur};allDates=Object.keys(MS).sort().reverse();
     t.textContent="Loading query data...";
-    const qr=await fetch("query_data.bin");
+    const qr=await fetch("query_data.bin?v="+APP_VERSION);
     if(qr.ok){const rd2=qr.body.getReader();const c2=[];let s2=0;
       while(true){const{done,value}=await rd2.read();if(done)break;c2.push(value);s2+=value.length}
       const cp2=new Uint8Array(s2);let o2=0;for(const c of c2){cp2.set(c,o2);o2+=c.length}
       QD=JSON.parse(pako.inflate(cp2,{to:'string'}))}
-    SKEYS=QD.streak_keys||[];SCONF=QD.streak_config||{};GH_START=22+SKEYS.length;
+    SKEYS=QD.streak_keys||[];SCONF=QD.streak_config||{};GH_START=23+SKEYS.length;
     buildFlat();t.textContent="Done!";
     setTimeout(()=>{
       document.getElementById("loadScreen").style.display="none";
@@ -339,7 +388,7 @@ function getStreakIdx(stat,threshold){
     key=prefix+threshold;
   }
   const idx=SKEYS.indexOf(key);
-  return idx>=0?22+idx:-1;
+  return idx>=0?23+idx:-1;
 }
 
 function bioFilter(p){
@@ -353,7 +402,8 @@ function bioFilter(p){
   if(bt==="state"){
     const ps=QD.player_states||{};
     const si=ps[p[P.NM]];
-    return si>=0&&(QD.states||[])[si]===bv;
+    if(si===undefined||si<0)return false;
+    return(QD.states||[])[si]===bv;
   }
   if(bt==="college"){
     const ci=p[P.COI];
@@ -433,7 +483,7 @@ function getBio(p){
   const pos=p[P.POS]||"";
   const ps=QD.player_states||{};
   const si=ps[p[P.NM]];
-  const state=si>=0?(QD.states||[])[si]||"":"";
+  const state=si!==undefined&&si>=0?(QD.states||[])[si]||"":"";
   const parts=[];
   if(pos)parts.push(pos);
   if(country&&country!=="United States")parts.push(country);
@@ -441,6 +491,55 @@ function getBio(p){
   if(college)parts.push(college);
   return parts.join(" · ");
 }
+
+// === URL SHARING ===
+function shareQuery(){
+  const params={
+    e:document.getElementById("qE").value,
+    s:document.getElementById("qS").value,
+    m:document.getElementById("qM").value,
+    c:document.getElementById("qC").value,
+    v:document.getElementById("qV").value,
+  };
+  const st=document.getElementById("qST");
+  if(st&&st.offsetParent!==null)params.st=st.value;
+  const bt=document.getElementById("qBioType").value;
+  if(bt){params.bt=bt;params.bv=document.getElementById("qBioVal").value}
+  const hash=Object.entries(params).map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
+  const url=window.location.origin+window.location.pathname+"#q="+hash;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=event.target;btn.textContent="✓ COPIED";
+    setTimeout(()=>{btn.textContent="🔗 SHARE"},1500);
+  }).catch(()=>{prompt("Copy this URL:",url)});
+}
+
+function loadFromURL(){
+  const h=window.location.hash;
+  if(!h||!h.startsWith("#q="))return false;
+  const pairs=h.slice(3).split("&");
+  const p={};pairs.forEach(s=>{const[k,v]=s.split("=");p[k]=decodeURIComponent(v)});
+  // Switch to query view
+  sv("query");
+  // Set entity
+  if(p.e){document.getElementById("qE").value=p.e;qO()}
+  // Wait for options to build, then set values
+  setTimeout(()=>{
+    if(p.m){document.getElementById("qM").value=p.m;qModeChange()}
+    setTimeout(()=>{
+      if(p.s)document.getElementById("qS").value=p.s;
+      if(p.st){const stEl=document.getElementById("qST");if(stEl){qStreakStatChange();stEl.value=p.st}}
+      if(p.bt){
+        document.getElementById("qBioType").value=p.bt;qBioTypeChange();
+        if(p.bv)document.getElementById("qBioVal").value=p.bv;
+      }
+      if(p.c)document.getElementById("qC").value=p.c;
+      if(p.v)document.getElementById("qV").value=p.v;
+      qRun();
+    },100);
+  },100);
+  return true;
+}
+
 </script>
 </body>
 </html>
