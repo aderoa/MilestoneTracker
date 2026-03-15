@@ -6,56 +6,7 @@
 <title>NBA Milestone Tracker</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js">
-// === URL SHARING ===
-function shareQuery(){
-  const params={
-    e:document.getElementById("qE").value,
-    s:document.getElementById("qS").value,
-    m:document.getElementById("qM").value,
-    c:document.getElementById("qC").value,
-    v:document.getElementById("qV").value,
-  };
-  const st=document.getElementById("qST");
-  if(st&&st.offsetParent!==null)params.st=st.value;
-  const bt=document.getElementById("qBioType").value;
-  if(bt){params.bt=bt;params.bv=document.getElementById("qBioVal").value}
-  const hash=Object.entries(params).map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
-  const url=window.location.origin+window.location.pathname+"#q="+hash;
-  navigator.clipboard.writeText(url).then(()=>{
-    const btn=event.target;btn.textContent="✓ COPIED";
-    setTimeout(()=>{btn.textContent="🔗 SHARE"},1500);
-  }).catch(()=>{prompt("Copy this URL:",url)});
-}
-
-function loadFromURL(){
-  const h=window.location.hash;
-  if(!h||!h.startsWith("#q="))return false;
-  const pairs=h.slice(3).split("&");
-  const p={};pairs.forEach(s=>{const[k,v]=s.split("=");p[k]=decodeURIComponent(v)});
-  // Switch to query view
-  sv("query");
-  // Set entity
-  if(p.e){document.getElementById("qE").value=p.e;qO()}
-  // Wait for options to build, then set values
-  setTimeout(()=>{
-    if(p.m){document.getElementById("qM").value=p.m;qModeChange()}
-    setTimeout(()=>{
-      if(p.s)document.getElementById("qS").value=p.s;
-      if(p.st){const stEl=document.getElementById("qST");if(stEl){qStreakStatChange();stEl.value=p.st}}
-      if(p.bt){
-        document.getElementById("qBioType").value=p.bt;qBioTypeChange();
-        if(p.bv)document.getElementById("qBioVal").value=p.bv;
-      }
-      if(p.c)document.getElementById("qC").value=p.c;
-      if(p.v)document.getElementById("qV").value=p.v;
-      qRun();
-    },100);
-  },100);
-  return true;
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{height:6px;width:6px}
@@ -216,7 +167,7 @@ const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"S
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=65;
-const APP_VERSION="2026.03.15c";
+const APP_VERSION="2026.03.15d";
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
   CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,SI:22,
 };
@@ -247,7 +198,7 @@ const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,
       const tm=Object.values(MS).reduce((s,d)=>s+d.length,0);
       document.getElementById("dbInfo").textContent="v"+APP_VERSION+" · "+allDates.length+" DATES · "+tm.toLocaleString()+" MILESTONES · "+(QD.p||[]).length+" PLAYERS · 1947-2026";
       if(allDates.length)document.getElementById("dateInput").value=allDates[0];
-      bF("fD");bF("fA");bF("fS");qOpts();rD();
+      bF("fD");bF("fA");bF("fS");qOpts();if(!loadFromURL())rD();
     },200);
   }catch(e){t.textContent="Error: "+e.message;console.error(e)}
 })();
@@ -525,7 +476,7 @@ function loadFromURL(){
   // Switch to query view
   sv("query");
   // Set entity
-  if(p.e){document.getElementById("qE").value=p.e;qO()}
+  if(p.e){document.getElementById("qE").value=p.e;qOpts()}
   // Wait for options to build, then set values
   setTimeout(()=>{
     if(p.m){document.getElementById("qM").value=p.m;qModeChange()}
