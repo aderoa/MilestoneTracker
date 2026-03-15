@@ -215,8 +215,8 @@ const EM={cumulative:"🎯",streak:"🔥",quirky:"🤪",single_game:"⭐",season
 const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"Single Game",season:"Season",team:"Team"};
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
-let SKEYS=[],SCONF={},GH_START=23;
-const APP_VERSION="2026.03.15b";
+let SKEYS=[],SCONF={},GH_START=65;
+const APP_VERSION="2026.03.15c";
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
   CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,SI:22,
 };
@@ -239,7 +239,7 @@ const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,
       while(true){const{done,value}=await rd2.read();if(done)break;c2.push(value);s2+=value.length}
       const cp2=new Uint8Array(s2);let o2=0;for(const c of c2){cp2.set(c,o2);o2+=c.length}
       QD=JSON.parse(pako.inflate(cp2,{to:'string'}))}
-    SKEYS=QD.streak_keys||[];SCONF=QD.streak_config||{};GH_START=23+SKEYS.length;
+    SKEYS=QD.streak_keys||[];SCONF=QD.streak_config||{};GH_START=(QD.p&&QD.p[0])?QD.p[0].length-6:65;
     buildFlat();t.textContent="Done!";
     setTimeout(()=>{
       document.getElementById("loadScreen").style.display="none";
@@ -311,7 +311,7 @@ function rS(){
 
 // === QUERY BUILDER ===
 const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"gp",l:"Games Played",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA},{id:"tov",l:"Turnovers",i:P.TOV},{id:"pf",l:"Personal Fouls",i:P.PF}];
-const GHSTATS=[{id:"hpts",l:"Career High PTS",i:P.HP},{id:"hreb",l:"Career High REB",i:P.HR},{id:"hast",l:"Career High AST",i:P.HA},{id:"hstl",l:"Career High STL",i:P.HS},{id:"hblk",l:"Career High BLK",i:P.HB},{id:"htpm",l:"Career High 3PM",i:P.HT3}];
+const GHSTATS=[{id:"hpts",l:"Career High PTS",o:0},{id:"hreb",l:"Career High REB",o:1},{id:"hast",l:"Career High AST",o:2},{id:"hstl",l:"Career High STL",o:3},{id:"hblk",l:"Career High BLK",o:4},{id:"htpm",l:"Career High 3PM",o:5}];
 const TPSTATS=[{id:"pts",l:"Points",i:3},{id:"reb",l:"Rebounds",i:4},{id:"ast",l:"Assists",i:5},{id:"tpm",l:"3-Pointers",i:6},{id:"gp",l:"Games",i:2}];
 const TSSTATS=[{id:"pts",l:"Points",i:3},{id:"tpm",l:"3-Pointers",i:4},{id:"reb",l:"Rebounds",i:5},{id:"ast",l:"Assists",i:6},{id:"gp",l:"Games",i:2}];
 
@@ -389,7 +389,8 @@ function getStreakIdx(stat,threshold){
     key=prefix+threshold;
   }
   const idx=SKEYS.indexOf(key);
-  return idx>=0?23+idx:-1;
+  if(idx<0)return -1;
+  return GH_START-SKEYS.length+idx;
 }
 
 function bioFilter(p){
@@ -441,12 +442,14 @@ function qRun(){
       }
     }else if(mode==="pergame"){
       const ps=[...PSTATS,...GHSTATS].find(s=>s.id===stat);if(!ps){return}
+      const gi=ps.i!==undefined?ps.i:GH_START+ps.o;
       results=players.filter(p=>p[P.GP]>=50).map(p=>({name:p[P.NM],
-        value:Math.round(p[ps.i]/p[P.GP]*100)/100,gp:p[P.GP],
+        value:Math.round(p[gi]/p[P.GP]*100)/100,gp:p[P.GP],
         bio:getBio(p),years:p[P.FY]+"-"+p[P.LY]}));
     }else{
       const ps=[...PSTATS,...GHSTATS].find(s=>s.id===stat);if(!ps){return}
-      results=players.map(p=>({name:p[P.NM],value:p[ps.i],gp:p[P.GP],
+      const gi=ps.i!==undefined?ps.i:GH_START+ps.o;
+      results=players.map(p=>({name:p[P.NM],value:p[gi],gp:p[P.GP],
         bio:getBio(p),years:p[P.FY]+"-"+p[P.LY]}));
     }
     results.sort((a,b2)=>b2.value-a.value);
