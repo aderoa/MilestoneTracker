@@ -13,28 +13,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install dependencies
         run: pip install requests
-
       - name: Pull latest changes
         run: git pull --rebase origin main
-
       - name: Run milestone detector
         run: python update_milestones.py
-
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add milestones.json
+          git add milestones.json query_data.bin
           if git diff --cached --quiet; then
-            echo "No changes to milestones.json"
+            echo "No changes"
           else
             git commit -m "Auto-update milestones $(date -u +%Y-%m-%d)"
             git pull --rebase origin main
