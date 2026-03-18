@@ -169,6 +169,7 @@ const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=65;
 const APP_VERSION="2026.03.15g";
+const CACHE_BUST=Date.now();
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,W:14,FY:15,LY:16,
   CI:17,COI:18,POS:19,HT:20,DY:21,PK:22,
 };
@@ -183,10 +184,10 @@ const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,
     const cp=new Uint8Array(sz);let o=0;for(const c of ch){cp.set(c,o);o+=c.length}
     const hist=JSON.parse(pako.inflate(cp,{to:'string'}));
     t.textContent="Loading season...";
-    const cr=await fetch("milestones.json?v="+APP_VERSION);let cur={};if(cr.ok)cur=await cr.json();
+    const cr=await fetch("milestones.json?v="+CACHE_BUST);let cur={};if(cr.ok)cur=await cr.json();
     MS={...hist,...cur};allDates=Object.keys(MS).sort().reverse();
     t.textContent="Loading query data...";
-    const qr=await fetch("query_data.bin?v="+APP_VERSION);
+    const qr=await fetch("query_data.bin?v="+CACHE_BUST);
     if(qr.ok){const rd2=qr.body.getReader();const c2=[];let s2=0;
       while(true){const{done,value}=await rd2.read();if(done)break;c2.push(value);s2+=value.length}
       const cp2=new Uint8Array(s2);let o2=0;for(const c of c2){cp2.set(c,o2);o2+=c.length}
