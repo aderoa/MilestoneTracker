@@ -168,7 +168,7 @@ const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"S
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=65;
-const APP_VERSION="2026.03.18a";
+const APP_VERSION="2026.03.18b";
 const CACHE_BUST=Date.now();
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,W:14,FY:15,LY:16,
   CI:17,COI:18,POS:19,HT:20,DY:21,PK:22,
@@ -265,7 +265,7 @@ function rS(){
 // === QUERY BUILDER ===
 const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"wins",l:"Wins",i:P.W},{id:"gp",l:"Games Played",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA},{id:"tov",l:"Turnovers",i:P.TOV},{id:"pf",l:"Personal Fouls",i:P.PF}];
 const GHSTATS=[{id:"hpts",l:"Career High PTS",o:0},{id:"hreb",l:"Career High REB",o:1},{id:"hast",l:"Career High AST",o:2},{id:"hstl",l:"Career High STL",o:3},{id:"hblk",l:"Career High BLK",o:4},{id:"htpm",l:"Career High 3PM",o:5}];
-const CONFSTATS=[{id:"confW",l:"Seasons in Winning Conf"},{id:"confL",l:"Seasons in Losing Conf"},{id:"confPct",l:"Winning Conf %"}];
+const CONFSTATS=[{id:"conf",l:"Conference Record"}];
 const TPSTATS=[{id:"pts",l:"Points",i:3},{id:"reb",l:"Rebounds",i:4},{id:"ast",l:"Assists",i:5},{id:"tpm",l:"3-Pointers",i:6},{id:"stl",l:"Steals",i:7},{id:"blk",l:"Blocks",i:8},{id:"wins",l:"Wins",i:9},{id:"gp",l:"Games",i:2}];
 const TSSTATS=[{id:"pts",l:"Points",i:3},{id:"tpm",l:"3-Pointers",i:4},{id:"reb",l:"Rebounds",i:5},{id:"ast",l:"Assists",i:6},{id:"wins",l:"Wins",i:7},{id:"gp",l:"Games",i:2}];
 
@@ -408,12 +408,10 @@ function qRun(){
         results=players.map(p=>{
           const c=pc[p[P.NM]]||[0,0];
           const wc=c[0],lc=c[1],total=wc+lc;
-          let value;
-          if(stat==="confW")value=wc;
-          else if(stat==="confL")value=lc;
-          else value=total>0?Math.round(wc/total*1000)/10:0;
-          return{name:p[P.NM],value:value,gp:p[P.GP],bio:getBio(p),years:p[P.FY]+"-"+p[P.LY],extra:wc+"/"+total};
-        }).filter(r=>r.value>0||stat==="confL");
+          const pct=total>0?Math.round(wc/total*1000)/10:0;
+          return{name:p[P.NM],value:wc,gp:p[P.GP],bio:getBio(p),years:p[P.FY]+"-"+p[P.LY],
+            wc:wc,lc:lc,total:total,pct:pct};
+        }).filter(r=>r.total>0);
       }else{
         const ps=[...PSTATS,...GHSTATS].find(s=>s.id===stat);if(!ps){return}
         const gi=ps.i!==undefined?ps.i:GH_START+ps.o;
@@ -426,10 +424,15 @@ function qRun(){
     document.getElementById("qCnt").textContent=results.length.toLocaleString()+" results";
     const isStreak=mode==="streak";const isPG=mode==="pergame";
     const isConf=CONFSTATS.find(s=>s.id===stat);
-    const valLabel=isStreak?"Streak":isPG?"Per Game":isConf?"Value":"Total";
-    const suffix=isStreak?" gm":isConf&&stat==="confPct"?"%":"";
-    h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">'+valLabel+'</th>'+(isConf?'<th class="r">W/Total</th>':'<th class="r">Games</th>')+'<th>Bio</th><th>Years</th></tr>';
-    b.innerHTML=results.map((r,i)=>'<tr><td class="rk'+(i===0?" t1":i<3?" t3":"")+'">'+(i+1)+'</td><td class="nm">'+r.name+'</td><td class="vl">'+fmt(r.value)+suffix+'</td><td class="r mt">'+(r.extra||fmt(r.gp))+'</td><td class="bi">'+r.bio+'</td><td class="mt">'+r.years+'</td></tr>').join("");
+    if(isConf){
+      h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">Win Conf</th><th class="r">Lose Conf</th><th class="r">Total</th><th class="r">Win %</th><th>Bio</th><th>Years</th></tr>';
+      b.innerHTML=results.map((r,i)=>'<tr><td class="rk'+(i===0?" t1":i<3?" t3":"")+'">'+(i+1)+'</td><td class="nm">'+r.name+'</td><td class="vl">'+r.wc+'</td><td class="r" style="color:#666">'+r.lc+'</td><td class="r mt">'+r.total+'</td><td class="r" style="font-weight:600;color:'+(r.pct>=60?"#059669":"#666")+'">'+r.pct+'%</td><td class="bi">'+r.bio+'</td><td class="mt">'+r.years+'</td></tr>').join("");
+    }else{
+      const valLabel=isStreak?"Streak":isPG?"Per Game":"Total";
+      const suffix=isStreak?" gm":"";
+      h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">'+valLabel+'</th><th class="r">Games</th><th>Bio</th><th>Years</th></tr>';
+      b.innerHTML=results.map((r,i)=>'<tr><td class="rk'+(i===0?" t1":i<3?" t3":"")+'">'+(i+1)+'</td><td class="nm">'+r.name+'</td><td class="vl">'+fmt(r.value)+suffix+'</td><td class="r mt">'+fmt(r.gp)+'</td><td class="bi">'+r.bio+'</td><td class="mt">'+r.years+'</td></tr>').join("");
+    }
   }else if(entity==="tp"){
     const ts=TPSTATS.find(s=>s.id===stat);if(!ts)return;
     results=(QD.tp||[]).map(r=>({name:r[0],team:r[1],value:r[ts.i],gp:r[2]}));
