@@ -168,7 +168,7 @@ const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"S
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=65;
-const APP_VERSION="2026.03.18b";
+const APP_VERSION="2026.03.18c";
 const CACHE_BUST=Date.now();
 const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,W:14,FY:15,LY:16,
   CI:17,COI:18,POS:19,HT:20,DY:21,PK:22,
@@ -425,8 +425,8 @@ function qRun(){
     const isStreak=mode==="streak";const isPG=mode==="pergame";
     const isConf=CONFSTATS.find(s=>s.id===stat);
     if(isConf){
-      h.innerHTML='<tr><th class="c">#</th><th>Player</th><th class="r">Win Conf</th><th class="r">Lose Conf</th><th class="r">Total</th><th class="r">Win %</th><th>Bio</th><th>Years</th></tr>';
-      b.innerHTML=results.map((r,i)=>'<tr><td class="rk'+(i===0?" t1":i<3?" t3":"")+'">'+(i+1)+'</td><td class="nm">'+r.name+'</td><td class="vl">'+r.wc+'</td><td class="r" style="color:#666">'+r.lc+'</td><td class="r mt">'+r.total+'</td><td class="r" style="font-weight:600;color:'+(r.pct>=60?"#059669":"#666")+'">'+r.pct+'%</td><td class="bi">'+r.bio+'</td><td class="mt">'+r.years+'</td></tr>').join("");
+      window._confResults=results;window._confSort="wc";window._confDir=-1;
+      renderConfTable();
     }else{
       const valLabel=isStreak?"Streak":isPG?"Per Game":"Total";
       const suffix=isStreak?" gm":"";
@@ -517,6 +517,25 @@ function loadFromURL(){
     },100);
   },100);
   return true;
+}
+
+function sortConf(col){
+  if(window._confSort===col)window._confDir*=-1;
+  else{window._confSort=col;window._confDir=-1}
+  renderConfTable();
+}
+function renderConfTable(){
+  const h=document.getElementById("qH"),b=document.getElementById("qB");
+  const results=window._confResults||[];const col=window._confSort||"wc";const dir=window._confDir||-1;
+  results.sort((a,b2)=>{
+    const av=col==="name"?a.name:a[col];const bv=col==="name"?b2.name:b2[col];
+    if(col==="name")return dir*(av<bv?-1:av>bv?1:0);
+    return dir*(av-bv);
+  });
+  const cols=[["name","Player"],["wc","Win Conf"],["lc","Lose Conf"],["total","Total"],["pct","Win %"]];
+  const arrow=c=>c===col?(dir<0?" ▼":" ▲"):"";
+  h.innerHTML='<tr><th class="c">#</th>'+cols.map(([k,l])=>'<th class="r" style="cursor:pointer;user-select:none" onclick="sortConf(\''+k+'\')">'+l+arrow(k)+'</th>').join("")+'<th>Bio</th><th>Years</th></tr>';
+  b.innerHTML=results.map((r,i)=>'<tr><td class="rk'+(i===0?" t1":i<3?" t3":"")+'">'+(i+1)+'</td><td class="nm">'+r.name+'</td><td class="vl">'+r.wc+'</td><td class="r" style="color:#666">'+r.lc+'</td><td class="r mt">'+r.total+'</td><td class="r" style="font-weight:600;color:'+(r.pct>=60?"#059669":"#666")+'">'+r.pct+'%</td><td class="bi">'+r.bio+'</td><td class="mt">'+r.years+'</td></tr>').join("");
 }
 
 </script>
