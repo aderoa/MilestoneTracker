@@ -168,9 +168,9 @@ const TL={cumulative:"Cumulative",streak:"Streak",quirky:"Quirky",single_game:"S
 const FT=["all","cumulative","streak","team","single_game","season","quirky"];
 // Player indices
 let SKEYS=[],SCONF={},GH_START=65;
-const APP_VERSION="2026.03.15f";
-const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,FY:14,LY:15,
-  CI:16,COI:17,POS:18,HT:19,DY:20,PK:21,SI:22,
+const APP_VERSION="2026.03.15g";
+const P={NM:0,GP:1,PT:2,RB:3,AS:4,ST:5,BK:6,TP:7,FM:8,FA:9,FTM:10,FTA:11,TOV:12,PF:13,W:14,FY:15,LY:16,
+  CI:17,COI:18,POS:19,HT:20,DY:21,PK:22,
 };
 
 (async function(){
@@ -262,10 +262,10 @@ function rS(){
 }
 
 // === QUERY BUILDER ===
-const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"gp",l:"Games Played",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA},{id:"tov",l:"Turnovers",i:P.TOV},{id:"pf",l:"Personal Fouls",i:P.PF}];
+const PSTATS=[{id:"pts",l:"Points",i:P.PT},{id:"reb",l:"Rebounds",i:P.RB},{id:"ast",l:"Assists",i:P.AS},{id:"stl",l:"Steals",i:P.ST},{id:"blk",l:"Blocks",i:P.BK},{id:"tpm",l:"3-Pointers",i:P.TP},{id:"wins",l:"Wins",i:P.W},{id:"gp",l:"Games Played",i:P.GP},{id:"fgm",l:"FG Made",i:P.FM},{id:"fga",l:"FG Attempted",i:P.FA},{id:"ftm",l:"FT Made",i:P.FTM},{id:"fta",l:"FT Attempted",i:P.FTA},{id:"tov",l:"Turnovers",i:P.TOV},{id:"pf",l:"Personal Fouls",i:P.PF}];
 const GHSTATS=[{id:"hpts",l:"Career High PTS",o:0},{id:"hreb",l:"Career High REB",o:1},{id:"hast",l:"Career High AST",o:2},{id:"hstl",l:"Career High STL",o:3},{id:"hblk",l:"Career High BLK",o:4},{id:"htpm",l:"Career High 3PM",o:5}];
-const TPSTATS=[{id:"pts",l:"Points",i:3},{id:"reb",l:"Rebounds",i:4},{id:"ast",l:"Assists",i:5},{id:"tpm",l:"3-Pointers",i:6},{id:"gp",l:"Games",i:2}];
-const TSSTATS=[{id:"pts",l:"Points",i:3},{id:"tpm",l:"3-Pointers",i:4},{id:"reb",l:"Rebounds",i:5},{id:"ast",l:"Assists",i:6},{id:"gp",l:"Games",i:2}];
+const TPSTATS=[{id:"pts",l:"Points",i:3},{id:"reb",l:"Rebounds",i:4},{id:"ast",l:"Assists",i:5},{id:"tpm",l:"3-Pointers",i:6},{id:"stl",l:"Steals",i:7},{id:"blk",l:"Blocks",i:8},{id:"wins",l:"Wins",i:9},{id:"gp",l:"Games",i:2}];
+const TSSTATS=[{id:"pts",l:"Points",i:3},{id:"tpm",l:"3-Pointers",i:4},{id:"reb",l:"Rebounds",i:5},{id:"ast",l:"Assists",i:6},{id:"wins",l:"Wins",i:7},{id:"gp",l:"Games",i:2}];
 
 function qOpts(){
   const e=document.getElementById("qE").value;

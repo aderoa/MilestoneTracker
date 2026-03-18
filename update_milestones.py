@@ -612,6 +612,15 @@ def rebuild_query_data(games_by_date):
     # Team season for 2025-26
     ts_2526 = {}
 
+    # Pre-compute team scores per game for win determination
+    team_game_scores = {}  # (iso, team) -> total_pts
+    for date_str in sorted(games_by_date.keys(), key=lambda d: datetime.strptime(d, "%m/%d/%Y")):
+        dt = datetime.strptime(date_str, "%m/%d/%Y")
+        iso = dt.strftime("%Y-%m-%d")
+        for g in games_by_date[date_str]:
+            k = (iso, g["team"])
+            team_game_scores[k] = team_game_scores.get(k, 0) + g["pts"]
+
     # Sort dates and process
     sorted_dates = sorted(games_by_date.keys(),
                           key=lambda d: datetime.strptime(d, "%m/%d/%Y"))
@@ -627,17 +636,22 @@ def rebuild_query_data(games_by_date):
             fgm, fga = g["fgm"], g["fga"]
             ftm, fta = g.get("ftm", 0), g.get("fta", 0)
             team = g["team"]
+            opp = g.get("opp", "")
+            my_score = team_game_scores.get((iso, team), 0)
+            opp_score = team_game_scores.get((iso, opp), 0)
+            won = 1 if my_score > opp_score and opp_score > 0 else 0
 
             # Career
             if name not in career:
                 career[name] = {"gp": 0, "pts": 0, "reb": 0, "ast": 0, "stl": 0, "blk": 0,
-                                "tpm": 0, "fgm": 0, "fga": 0, "ftm": 0, "fta": 0, "tov": 0, "pf": 0, "fy": 2026, "ly": 2026}
+                                "tpm": 0, "fgm": 0, "fga": 0, "ftm": 0, "fta": 0, "tov": 0, "pf": 0, "wins": 0, "fy": 2026, "ly": 2026}
             c = career[name]
             tov = g.get("tov", 0); pf = g.get("pf", 0)
             c["gp"] += 1; c["pts"] += pts; c["reb"] += reb; c["ast"] += ast
             c["stl"] += stl; c["blk"] += blk; c["tpm"] += tpm
             c["fgm"] += fgm; c["fga"] += fga; c["ftm"] += ftm; c["fta"] += fta
             c["tov"] = c.get("tov", 0) + tov; c["pf"] = c.get("pf", 0) + pf
+            c["wins"] = c.get("wins", 0) + won
             c["ly"] = 2026
 
             # Game highs
@@ -654,9 +668,11 @@ def rebuild_query_data(games_by_date):
             # Team-player
             k = (name, team)
             if k not in tp:
-                tp[k] = {"gp": 0, "pts": 0, "reb": 0, "ast": 0, "tpm": 0}
+                tp[k] = {"gp": 0, "pts": 0, "reb": 0, "ast": 0, "tpm": 0, "stl": 0, "blk": 0, "wins": 0}
             tp[k]["gp"] += 1; tp[k]["pts"] += pts; tp[k]["reb"] += reb
             tp[k]["ast"] += ast; tp[k]["tpm"] += tpm
+            tp[k]["stl"] = tp[k].get("stl", 0) + stl; tp[k]["blk"] = tp[k].get("blk", 0) + blk
+            tp[k]["wins"] = tp[k].get("wins", 0) + won
 
             # Streaks
             if name not in sc:
@@ -677,13 +693,17 @@ def rebuild_query_data(games_by_date):
                 k2 = f"t{t}"; s_c[k2] = s_c.get(k2, 0) + 1 if tpm >= t else 0; s_b[k2] = max(s_b.get(k2, 0), s_c[k2])
             s_c["dd"] = s_c.get("dd", 0) + 1 if dd >= 2 else 0; s_b["dd"] = max(s_b.get("dd", 0), s_c["dd"])
             s_c["td"] = s_c.get("td", 0) + 1 if dd >= 3 else 0; s_b["td"] = max(s_b.get("td", 0), s_c["td"])
+            s_c["w"] = s_c.get("w", 0) + 1 if won else 0; s_b["w"] = max(s_b.get("w", 0), s_c["w"])
 
             # Team season 2025-26
             if team:
                 if team not in ts_2526:
-                    ts_2526[team] = {"gp_set": set(), "pts": 0, "tpm": 0, "reb": 0, "ast": 0}
+                    ts_2526[team] = {"gp_set": set(), "pts": 0, "tpm": 0, "reb": 0, "ast": 0, "wins": 0}
                 ts_2526[team]["pts"] += pts; ts_2526[team]["tpm"] += tpm
                 ts_2526[team]["reb"] += reb; ts_2526[team]["ast"] += ast
+                if iso not in ts_2526[team]["gp_set"]:
+                    ts_2526[team]["gp_set"].add(iso)
+                    ts_2526[team]["wins"] += won
                 ts_2526[team]["gp_set"].add(iso)
 
     # Build output arrays
@@ -693,7 +713,7 @@ def rebuild_query_data(games_by_date):
                "s1","s2","s3","s4","s5",
                "b1","b2","b3","b4","b5",
                "t1","t2","t3","t4","t5","t6",
-               "dd","td"]
+               "dd","td","w"]
 
     players_arr = []
     for name, c in career.items():
@@ -711,25 +731,25 @@ def rebuild_query_data(games_by_date):
         try: pick = int(b.get("pick", "0"))
         except: pass
         row = [name, c["gp"], c["pts"], c["reb"], c["ast"], c["stl"], c["blk"], c["tpm"],
-               c["fgm"], c["fga"], c["ftm"], c["fta"], c.get("tov", 0), c.get("pf", 0), c["fy"], c["ly"],
+               c["fgm"], c["fga"], c["ftm"], c["fta"], c.get("tov", 0), c.get("pf", 0), c.get("wins", 0), c["fy"], c["ly"],
                cid, colid, pos, ht, draft, pick]
         for sk in P_SKEYS:
             row.append(s_b_p.get(sk, 0))
         row.extend([g_h["pts"], g_h["reb"], g_h["ast"], g_h["stl"], g_h["blk"], g_h["tpm"]])
         players_arr.append(row)
 
-    tp_arr = [[k[0], k[1], v["gp"], v["pts"], v["reb"], v["ast"], v["tpm"]] for k, v in tp.items()]
+    tp_arr = [[k[0], k[1], v["gp"], v["pts"], v["reb"], v["ast"], v["tpm"], v.get("stl",0), v.get("blk",0), v.get("wins",0)] for k, v in tp.items()]
 
     # Merge historical team seasons + 2025-26
     ts_arr = []
     for k, v in ts_hist.items():
         team, syr_str = k
         syr = int(syr_str)
-        ts_arr.append([team, syr, v["gp"], v["pts"], v["tpm"], v["reb"], v["ast"]])
+        ts_arr.append([team, syr, v["gp"], v["pts"], v["tpm"], v["reb"], v["ast"], v.get("wins", 0)])
     for team, v in ts_2526.items():
         gp = len(v["gp_set"])
         if gp > 0:
-            ts_arr.append([team, 2026, gp, v["pts"], v["tpm"], v["reb"], v["ast"]])
+            ts_arr.append([team, 2026, gp, v["pts"], v["tpm"], v["reb"], v["ast"], v.get("wins", 0)])
 
     streak_config = {
         "pts": {"label": "Points", "thresholds": PTS_THRESH},
@@ -740,6 +760,7 @@ def rebuild_query_data(games_by_date):
         "tpm": {"label": "3-Pointers Made", "thresholds": TPM_THRESH},
         "dd": {"label": "Double-Doubles", "thresholds": [1]},
         "td": {"label": "Triple-Doubles", "thresholds": [1]},
+        "w": {"label": "Wins", "thresholds": [1]},
     }
 
     # Build player_states lookup
